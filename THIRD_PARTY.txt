@@ -1,0 +1,21 @@
+Third-party assets
+
+1. super-newton code framework
+   Source: https://github.com/doikov/super-newton
+   License: MIT 
+   Use in this paper: Adapted optimization framework for experiments.
+
+2. LeapSSN SVM example
+   Source: https://github.com/amal-alphonse/leapssn
+   License: MIT
+   Use in this paper: Adapted SVM experiment setup.
+
+3. PyTorch
+   URL: https://pytorch.org/ 
+   License: BSD-3-Clause
+   Used for: automatic differentiation, tensor computations, and the Adam optimizer implementation.
+
+4. scikit-learn
+   URL: https://scikit-learn.org/
+   License: BSD-3-Clause
+   Used for: synthetic classification data generation.
