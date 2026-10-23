@@ -14,7 +14,8 @@ def run_methods(methods_to_run, oracle, x_0):
         print(f"\nRunning {method_name}...")
 
         # Call the method
-        _, _, history = func(*args, **kwargs)
+        _, status, history = func(*args, **kwargs)
+        print(f"Status: {status}")
 
         # Store results
         history_dict[method_name] = history
@@ -449,3 +450,40 @@ def plot_graphs(
     if filename:
         print("output: %s" % filename)
         plt.savefig(filename)
+
+
+def plot_mf_comparison(histories, styles, output_dir=None):
+    """Plot every recorded iterate against runtime and outer iteration.
+
+    Both comparison notebooks use this helper. Styles map each method label
+    to Matplotlib color/linestyle options. No objective reference is subtracted.
+    """
+    from pathlib import Path
+
+    if output_dir is not None:
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+    measures = (
+        ("func", "Objective F(U, V)", "objective"),
+        ("grad_norm", "Full gradient norm", "gradient_norm"),
+        ("penalty", "Weighted nonnegativity penalty", "penalty"),
+    )
+    for measure, ylabel, filename in measures:
+        fig, axes = plt.subplots(1, 2, figsize=(12, 4.7))
+        for label, history in histories.items():
+            values = np.asarray(history[measure], dtype=float)
+            for ax, x in zip(axes, (history["time"], np.arange(len(values)))):
+                ax.semilogy(x, values, label=label, linewidth=1.8, **styles[label])
+        axes[0].set_xlabel("Runtime (s)")
+        axes[1].set_xlabel("Outer iteration")
+        axes[0].set_ylabel(ylabel)
+        for ax in axes:
+            ax.grid(True, which="both", alpha=0.25)
+        handles, labels = axes[0].get_legend_handles_labels()
+        fig.legend(handles, labels, loc="upper center", ncol=4, frameon=False, fontsize=9)
+        fig.tight_layout(rect=(0, 0, 1, 0.85))
+        if output_dir is not None:
+            for extension in ("png", "svg"):
+                fig.savefig(output_dir / f"{filename}.{extension}", dpi=170, bbox_inches="tight")
+        plt.show()
+        plt.close(fig)

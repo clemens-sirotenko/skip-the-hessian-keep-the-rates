@@ -141,6 +141,12 @@ def mf_leapssn(oracle, x_0, n_iters=1000, H_0=1.0,
     for 'n_iters' iterations, minimizing smooth function.
 
     'oracle' is an instance of BaseSmoothOracle representing the objective.
+
+    Only finite steps passing the acceptance tests update the iterate. Failed
+    inner solves retry with larger regularization. An exhausted search or a
+    step too small to change x returns the last accepted point with a failure
+    status; it is not reported as convergence. Set grad_tol explicitly to stop
+    at approximate stationarity (which need not be a local minimum).
     """
 
     
@@ -179,7 +185,7 @@ def mf_leapssn(oracle, x_0, n_iters=1000, H_0=1.0,
                 (datetime.now() - start_timestamp).total_seconds())
 
         if (f_star is not None and f_k - f_star < eps) or \
-                (grad_tol is not None and g_k_norm < grad_tol):
+                (g_k_norm == 0 or (grad_tol is not None and g_k_norm < grad_tol)):
             status = "success, %d iters" % k
             break
 
@@ -197,8 +203,11 @@ def mf_leapssn(oracle, x_0, n_iters=1000, H_0=1.0,
         H_mv = Hess_k if callable(Hess_k) else (lambda v: Hess_k @ v)
 
         
-        history["func_at_hess_eval"].append(oracle.func(x_k))
+        if history is not None:
+            history["func_at_hess_eval"].append(oracle.func(x_k))
         adaptive_search_max_iter = 120
+        step_accepted = False
+        failure_status = "line_search_failed"
         for i in range(adaptive_search_max_iter + 1):
             if i == adaptive_search_max_iter:
                 if warnings:
@@ -207,6 +216,9 @@ def mf_leapssn(oracle, x_0, n_iters=1000, H_0=1.0,
                 break
 
             lambda_k = H_k 
+            if not np.isfinite(lambda_k) or lambda_k <= 0:
+                failure_status = "invalid_regularization"
+                break
             def A_mv(v):
                 return H_mv(v) + lambda_k * v
             Aop = LinearOperator((x_k.size, x_k.size), matvec=A_mv, dtype=np.float64)
@@ -223,41 +235,68 @@ def mf_leapssn(oracle, x_0, n_iters=1000, H_0=1.0,
             except Exception as e:
                 if warnings:
                     print("W: General exception:", e)
+                H_k *= 2.0
                 continue
             if lss_method == "cg" and info != 0:
                 if warnings:
                     print("W: CG linear solver did not converge, info =", info)
+                H_k *= 2.0
                 continue
             if lss_method == "minres" and info < 0:
                 if warnings:
                     print("W: MINRES linear solver did not converge, info =", info)
+                H_k *= 2.0
                 continue
             if not np.all(np.isfinite(delta_x)):
                 if warnings:
                     print("W: not all finite delta_x at k =", k, "i =", i)
+                H_k *= 2.0
                 continue
 
-            f_new = oracle.func(x_k + delta_x)
-            history["func_at_lssolve"].append(f_new)
+            # A finite direction can still overflow or be lost to rounding.
+            with np.errstate(over="ignore", invalid="ignore"):
+                x_trial = x_k + delta_x
+            if not np.all(np.isfinite(x_trial)):
+                H_k *= 2.0
+                continue
+            if np.array_equal(x_trial, x_k):
+                failure_status = "numerical_stagnation"
+                break
 
-            g_new = oracle.grad(x_k + delta_x)
-            g_new_norm_sqr = dual_norm_sqr(g_new)
-            history["grad_norm_at_lssolve"].append(g_new_norm_sqr ** 0.5)
+            with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+                f_new = oracle.func(x_trial)
+                g_new = oracle.grad(x_trial)
+                g_new_norm_sqr = dual_norm_sqr(g_new)
+            if not (np.isfinite(f_new) and np.all(np.isfinite(g_new))
+                    and np.isfinite(g_new_norm_sqr)):
+                H_k *= 2.0
+                continue
+            if history is not None:
+                history["func_at_lssolve"].append(f_new)
+                history["grad_norm_at_lssolve"].append(g_new_norm_sqr ** 0.5)
 
             if not adaptive_search:
+                step_accepted = True
                 break
 
             # Check condition for H_k
             if f_current - f_new >= 0.25*lambda_k*np.linalg.norm(delta_x)**2 and g_new.dot(-delta_x) >= 0.5*g_new_norm_sqr / (lambda_k):
+                step_accepted = True
                 H_k = H_k * 0.5             
                 break
             H_k = H_k * 2
             no_backtracks += 1
 
-        history["reg_parameter"].append(lambda_k)
+        if not step_accepted:
+            status = "%s, %d iters" % (failure_status, k)
+            if warnings:
+                print("W:", status, "-- returning the last accepted iterate", flush=True)
+            break
+        if history is not None:
+            history["reg_parameter"].append(lambda_k)
 
         # Update the point
-        x_k += delta_x
+        x_k = x_trial
         f_k = f_new
         g_k = g_new
         g_k_norm = g_new_norm_sqr ** 0.5
@@ -274,6 +313,12 @@ def mf_gladssn(oracle, x_0, n_iters=1000, H_0=1.0,
     for 'n_iters' iterations, minimizing smooth function.
 
     'oracle' is an instance of BaseSmoothOracle representing the objective.
+
+    Only finite steps passing the acceptance tests update the iterate. Failed
+    inner solves retry with larger regularization. An exhausted search or a
+    step too small to change x returns the last accepted point with a failure
+    status; it is not reported as convergence. Set grad_tol explicitly to stop
+    at approximate stationarity (which need not be a local minimum).
     """
     
     oracle = OracleCallsCounter(oracle)
@@ -330,9 +375,11 @@ def mf_gladssn(oracle, x_0, n_iters=1000, H_0=1.0,
         H_mv = Hess_k if callable(Hess_k) else (lambda v: Hess_k @ v)
 
         
-        history["func_at_hess_eval"].append(oracle.func(x_k))
+        if history is not None:
+            history["func_at_hess_eval"].append(oracle.func(x_k))
         adaptive_search_max_iter = 120
-        step_found = False
+        step_accepted = False
+        failure_status = "line_search_failed"
         for i in range(adaptive_search_max_iter + 1):
             if i == adaptive_search_max_iter:
                 if warnings:
@@ -344,6 +391,9 @@ def mf_gladssn(oracle, x_0, n_iters=1000, H_0=1.0,
             #else: # normal
             #    lambda_k = H_k* g_k_norm ** 0.5
             lambda_k = H_k* g_k_norm ** p
+            if not np.isfinite(lambda_k) or lambda_k <= 0:
+                failure_status = "invalid_regularization"
+                break
             def A_mv(v):
                 return H_mv(v) + lambda_k * v
             Aop = LinearOperator((x_k.size, x_k.size), matvec=A_mv, dtype=np.float64)
@@ -381,52 +431,72 @@ def mf_gladssn(oracle, x_0, n_iters=1000, H_0=1.0,
                             flush=True,
                         )
                     H_k *= 4
-                    break
+                    continue
             except Exception as e:
                 if warnings:
                     print("W: General exception:", e)
+                H_k *= 4.0
                 continue
             if lss_method == "cg" and info != 0:
                 if warnings:
                     print("W: CG linear solver did not converge, info =", info)
+                H_k *= 4.0
                 continue
             if lss_method == "minres" and info < 0:
                 if warnings:
                     print("W: MINRES linear solver did not converge, info =", info)
+                H_k *= 4.0
                 continue
             if not np.all(np.isfinite(delta_x)):
                 if warnings:
                     print("W: not all finite delta_x at k =", k, "i =", i)
+                H_k *= 4.0
                 continue
 
-            f_new = oracle.func(x_k + delta_x)
-            history["func_at_lssolve"].append(f_new)
+            # A finite direction can still overflow or be lost to rounding.
+            with np.errstate(over="ignore", invalid="ignore"):
+                x_trial = x_k + delta_x
+            if not np.all(np.isfinite(x_trial)):
+                H_k *= 4.0
+                continue
+            if np.array_equal(x_trial, x_k):
+                failure_status = "numerical_stagnation"
+                break
 
-            g_new = oracle.grad(x_k + delta_x)
-            g_new_norm_sqr = dual_norm_sqr(g_new)
-            history["grad_norm_at_lssolve"].append(g_new_norm_sqr ** 0.5)
-            step_found = True
+            with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+                f_new = oracle.func(x_trial)
+                g_new = oracle.grad(x_trial)
+                g_new_norm_sqr = dual_norm_sqr(g_new)
+            if not (np.isfinite(f_new) and np.all(np.isfinite(g_new))
+                    and np.isfinite(g_new_norm_sqr)):
+                H_k *= 4.0
+                continue
+            if history is not None:
+                history["func_at_lssolve"].append(f_new)
+                history["grad_norm_at_lssolve"].append(g_new_norm_sqr ** 0.5)
 
             if not adaptive_search:
+                step_accepted = True
                 break
 
             # Check condition for H_k
             if f_current - f_new >= 0.25*lambda_k*np.linalg.norm(delta_x)**2 and g_new.dot(-delta_x) >= 0.5*g_new_norm_sqr / (lambda_k):
+                step_accepted = True
                 H_k = H_k * 0.25                
                 break
             H_k = H_k * 4
             no_backtracks += 1
 
-        if not step_found:
-            status = "line_search_failed, %d iters" % k
+        if not step_accepted:
+            status = "%s, %d iters" % (failure_status, k)
             if warnings:
-                print("W: no valid GLAd-SSN step at iteration", k, flush=True)
+                print("W:", status, "-- returning the last accepted iterate", flush=True)
             break
-
-        history["reg_parameter"].append(lambda_k)
+        if history is not None:
+            history["reg_parameter"].append(lambda_k)
 
         # Update the point
-        x_k += delta_x
+        x_k = x_trial
         f_k = f_new
         g_k = g_new
         g_k_norm = g_new_norm_sqr ** 0.5
