@@ -89,7 +89,8 @@ class PositiveMatrixFactorization:
     """
     Minimise over U in R^{m x r}, V in R^{n x r}:
 
-        f(U,V) = 0.5 * || U V^T - M ||_F^2
+        R = U V^T - M
+        f(U,V) = 0.5 * ||R||_F^2
                  + 0.5*lam*(||U||_F^2 + ||V||_F^2)
                  + mu*(||(-U)_+||_F^2 + ||(-V)_+||_F^2)
 
@@ -106,18 +107,38 @@ class PositiveMatrixFactorization:
         self.lam = float(lam)
         self.mu = float(mu)
 
-    # ---- pack/unpack helpers ----
+    # ---- Convert between matrix factors and the solver's single vector ----
     def unpack(self, z):
+        """Split a vector of length (m + n)*r into U (m, r) and V (n, r).
+
+        Entries are stored row by row (NumPy's default C order): all of U,
+        followed by all of V. This also splits a search direction into dU,
+        dV, using exactly the same ordering as for the factor matrices.
+
+        The returned arrays share memory with z for ordinary 1-D NumPy input:
+        changing U or V in place also changes z. Copy them if needed.
+        """
         m, n, r = self.m, self.n, self.r
+        # The first m*r entries hold U; restore its m rows and r columns.
         U = z[:m*r].reshape(m, r)
+        # The remaining n*r entries hold V; restore its n rows and r columns.
         V = z[m*r:].reshape(n, r)
         return U, V
 
     def pack(self, U, V):
+        """Flatten U (m, r) and V (n, r) into one vector of length (m + n)*r.
+
+        The solver works with a single vector rather than two matrices.
+        Use the same layout for factor values, gradient blocks, and Hessian
+        products. For matching shapes, unpack(pack(U, V)) recovers U and V.
+        """
+        # reshape(-1) lists entries row by row; -1 infers the vector length.
+        # concatenate puts U first, then V, and allocates a new output array.
         return np.concatenate([U.reshape(-1), V.reshape(-1)], axis=0)
 
     # ---- objective ----
     def func(self, z):
+        """Evaluate the objective with reconstruction residual R = U V^T - M."""
         U, V = self.unpack(z)
         R = U @ V.T - self.M  # (m,n)
 
@@ -136,6 +157,7 @@ class PositiveMatrixFactorization:
     
     # ---- gradient ----
     def grad(self, z):
+        """Return the packed gradient; the data-fit blocks are R V and R^T U."""
         U, V = self.unpack(z)
         R = U @ V.T - self.M
 
@@ -154,91 +176,84 @@ class PositiveMatrixFactorization:
 
         return self.pack(gU, gV)
 
-    # ---- Gauss–Newton / generalized Hessian: matrix-free matvec ----
+    # ---- Gauss-Newton approximation: matrix-free matvec ----
     def hess_gn(self, z):
-        """
-        Returns a function Hv(v) that computes (H_GN(z) v) WITHOUT forming H.
+        """Return a callable applying the Gauss-Newton approximation at z.
 
-        H_GN is PSD-ish:
-          - reconstruction term uses Gauss–Newton (J^T J) which is PSD
-          - L2 adds lam*I
-          - hinge penalty adds diagonal 2*mu on entries where U<0 or V<0
-        """
-        U, V = self.unpack(z)
-        m, n, r = self.m, self.n, self.r
-        lam, mu = self.lam, self.mu
-
-        # Precompute Gram matrices for GN terms
-        VtV = V.T @ V   # (r,r)
-        UtU = U.T @ U   # (r,r)
-
-        # Semismooth diagonal curvature masks for hinge penalty
-        maskU = (U < 0.0).astype(np.float64)  # (m,r)
-        maskV = (V < 0.0).astype(np.float64)  # (n,r)
-
-        def Hv(v):
-            dU, dV = self.unpack(v)
-
-            A = dV.T @ V  # (r,r)
-            B = dU.T @ U  # (r,r)
-
-            HvU = dU @ VtV + U @ A
-            HvV = dV @ UtU + V @ B
-
-
-            # L2 curvature
-            HvU += lam * dU
-            HvV += lam * dV
-
-            # hinge curvature: second derivative is 2*mu on negative entries, else 0
-            HvU += (2.0 * mu) * (maskU * dU)
-            HvV += (2.0 * mu) * (maskV * dV)
-
-            return self.pack(HvU, HvV)
-
-        return Hv
-     
-    def hess(self, z):
-        """
-        Returns Hv(v) computing the exact symmetric Hessian-vector product H*v.
+        For R = U V^T - M, its directional derivative is
+            dR = dU V^T + U dV^T.
+        The data-fit blocks are dR V and dR^T U. Gauss-Newton omits
+        the residual terms R dV and R^T dU from the exact Hessian.
+        Ridge and penalty curvature are included. For lam, mu >= 0,
+        the resulting operator is positive semidefinite.
         """
         U, V = self.unpack(z)
-        m, n, r = self.m, self.n, self.r
+        # Freeze the evaluation point for reuse in lazy Hessian updates.
+        U, V = U.copy(), V.copy()
         lam, mu = self.lam, self.mu
 
-        # Precompute Gram matrices
-        VtV = V.T @ V  # (r,r)
-        UtU = U.T @ U  # (r,r)
-
-        # Diagonal masks for hinge penalty
+        # At zero entries choose zero generalized penalty curvature.
         maskU = (U < 0.0).astype(np.float64)
         maskV = (V < 0.0).astype(np.float64)
 
         def Hv(v):
             dU, dV = self.unpack(v)
+            dR = dU @ V.T + U @ dV.T  # (m, n): directional change of R
 
-            # symmetric exact Hessian-vector product
-            # Step 1: GN-like term
-            HvU = dU @ VtV + U @ (dV.T @ V)
-            HvV = dV @ UtU + V @ (dU.T @ U)
+            # Gauss-Newton contribution from 0.5 * ||R||_F^2.
+            HvU = dR @ V
+            HvV = dR.T @ U
 
-            # Step 2: exact second-order coupling term
-            # (dU V^T + U dV^T) @ V for U block
-            # (dU V^T + U dV^T)^T @ U for V block
-            HvU += (dU @ V.T + U @ dV.T) @ V
-            HvV += (dU @ V.T + U @ dV.T).T @ U
-
-            # Step 3: L2 regularization
+            # Ridge curvature.
             HvU += lam * dU
             HvV += lam * dV
 
-            # Step 4: hinge penalty curvature
+            # Nonnegativity penalty curvature.
             HvU += 2.0 * mu * (maskU * dU)
             HvV += 2.0 * mu * (maskV * dV)
 
             return self.pack(HvU, HvV)
 
         return Hv
- 
 
- 
+    # ---- Exact Hessian / generalized Hessian selection ----
+    def hess(self, z):
+        """Return a callable applying the Hessian at z without forming it.
+
+        R = U V^T - M and dR = dU V^T + U dV^T give the product rules
+            d(R V)   = dR V   + R dV,
+            d(R^T U) = dR^T U + R^T dU.
+        These are the data-fit Hessian blocks. Ridge and penalty curvature
+        are added below. At zero factor entries, the penalty is not twice
+        differentiable; choose zero from its generalized curvature [0, 2*mu]
+        for mu >= 0. Away from these kinks, this is the classical Hessian.
+        """
+        U, V = self.unpack(z)
+        # Freeze the evaluation point for reuse in lazy Hessian updates.
+        U, V = U.copy(), V.copy()
+        R = U @ V.T - self.M  # (m, n): residual at the evaluation point
+        lam, mu = self.lam, self.mu
+
+        # At zero entries choose zero generalized penalty curvature.
+        maskU = (U < 0.0).astype(np.float64)
+        maskV = (V < 0.0).astype(np.float64)
+
+        def Hv(v):
+            dU, dV = self.unpack(v)
+            dR = dU @ V.T + U @ dV.T  # (m, n): directional change of R
+
+            # Product rule for the gradient blocks R @ V and R.T @ U.
+            HvU = dR @ V + R @ dV
+            HvV = dR.T @ U + R.T @ dU
+
+            # Ridge curvature.
+            HvU += lam * dU
+            HvV += lam * dV
+
+            # Nonnegativity penalty curvature.
+            HvU += 2.0 * mu * (maskU * dU)
+            HvV += 2.0 * mu * (maskV * dV)
+
+            return self.pack(HvU, HvV)
+
+        return Hv
