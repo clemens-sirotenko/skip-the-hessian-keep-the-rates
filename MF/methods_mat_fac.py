@@ -109,30 +109,31 @@ def _normalize_cols(A):
 
 
 def align_factors(U, V, U_true, V_true):
+    """Align columns of U and matching rows of V, preserving U @ V."""
     r = U_true.shape[1]
-    Un, Vn = _normalize_cols(U), _normalize_cols(V)
-    Utn, Vtn = _normalize_cols(U_true), _normalize_cols(V_true)
+    Un, Vn = _normalize_cols(U), _normalize_cols(V.T)
+    Utn, Vtn = _normalize_cols(U_true), _normalize_cols(V_true.T)
 
-    # score for matching columns
+    # Match each column of U together with the corresponding row of V.
     C = np.abs(Utn.T @ Un) + np.abs(Vtn.T @ Vn)  # (r,r)
     row, col = linear_sum_assignment(-C)
     perm = col
 
     U_p = U[:, perm]
-    V_p = V[:, perm]
+    V_p = V[perm, :]
 
     # per-component scaling to best match U_true
     U_al = np.zeros_like(U_p)
     V_al = np.zeros_like(V_p)
     for k in range(r):
         u = U_p[:, k]
-        v = V_p[:, k]
+        v = V_p[k, :]
         ut = U_true[:, k]
         dk = (ut @ u) / ((u @ u) + 1e-12)
         if abs(dk) < 1e-12:
             dk = 1.0
         U_al[:, k] = dk * u
-        V_al[:, k] = (1.0 / dk) * v
+        V_al[k, :] = (1.0 / dk) * v
 
     return U_al, V_al
 
@@ -146,17 +147,17 @@ def mf_terms_and_metrics(
     U, V = oracle.unpack(z)
     M_obs = oracle.M
 
-    R = U @ V.T - M_obs
+    R = U @ V - M_obs
     rec = 0.5 * np.sum(R * R)
-    pen = oracle.mu * (
+    pen = 0.5 * oracle.beta * (
         np.sum(np.maximum(-U, 0.0) ** 2) + np.sum(np.maximum(-V, 0.0) ** 2)
     )
 
-    rel_obs = np.linalg.norm(U @ V.T - M_obs) / (np.linalg.norm(M_obs) + 1e-12)
+    rel_obs = np.linalg.norm(U @ V - M_obs) / (np.linalg.norm(M_obs) + 1e-12)
 
     rel_clean = None
     if M_clean is not None:
-        rel_clean = np.linalg.norm(U @ V.T - M_clean) / (
+        rel_clean = np.linalg.norm(U @ V - M_clean) / (
             np.linalg.norm(M_clean) + 1e-12
         )
 

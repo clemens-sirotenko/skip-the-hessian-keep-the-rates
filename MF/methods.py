@@ -970,17 +970,19 @@ def alternating_gradient_method(
     """
     Block gradient descent on the same smooth penalized objective as oracle.func.
     One U-step with V fixed, then one V-step with U fixed.
+    U has shape (m, r), V has shape (r, n), and the residual is U @ V - M.
+    Ridge and penalty weights follow the revised equation (27): alpha/2, beta/2.
 
     This is usually the cleanest 'factorization-aware' baseline exact
     penalty formulation.
     """
-    M, lam, mu = oracle.M, oracle.lam, oracle.mu
+    M, alpha, beta = oracle.M, oracle.alpha, oracle.beta
     U, V = oracle.unpack(np.asarray(z_0, dtype=np.float64).copy())
 
     z = oracle.pack(U, V)
     func_k = oracle.func(z)
-    L_u = float(L_u0) if L_u0 is not None else (np.linalg.norm(V, 2) ** 2 + lam + 2.0 * mu)
-    L_v = float(L_v0) if L_v0 is not None else (np.linalg.norm(U, 2) ** 2 + lam + 2.0 * mu)
+    L_u = float(L_u0) if L_u0 is not None else (np.linalg.norm(V, 2) ** 2 + alpha + beta)
+    L_v = float(L_v0) if L_v0 is not None else (np.linalg.norm(U, 2) ** 2 + alpha + beta)
 
     history = _make_history(trace)
     start_timestamp = datetime.now()
@@ -1005,8 +1007,8 @@ def alternating_gradient_method(
             break
 
         # ---- U update ----
-        R = U @ V.T - M
-        gU = R @ V + lam * U + 2.0 * mu * (U * (U < 0.0))
+        R = U @ V - M
+        gU = R @ V.T + alpha * U + beta * np.minimum(U, 0.0)
 
         ls_ok = False
         for _ in range(30):
@@ -1030,8 +1032,8 @@ def alternating_gradient_method(
             print("W: U line-search maxed out", flush=True)
 
         # ---- V update ----
-        R = U @ V.T - M
-        gV = R.T @ U + lam * V + 2.0 * mu * (V * (V < 0.0))
+        R = U @ V - M
+        gV = U.T @ R + alpha * V + beta * np.minimum(V, 0.0)
 
         ls_ok = False
         for _ in range(30):

@@ -86,42 +86,38 @@ class OracleCallsCounter(BaseSmoothOracle):
     
 
 class PositiveMatrixFactorization:
-    """
-    Minimise over U in R^{m x r}, V in R^{n x r}:
+    """Non-negative matrix factorization using the paper's revised equation (27).
 
-        R = U V^T - M
+    U has shape (m, r), V has shape (r, n), and M (the paper's Y) has
+    shape (m, n). With reconstruction residual R = U V - M, minimize
+
         f(U,V) = 0.5 * ||R||_F^2
-                 + 0.5*lam*(||U||_F^2 + ||V||_F^2)
-                 + mu*(||(-U)_+||_F^2 + ||(-V)_+||_F^2)
+                 + 0.5*alpha*(||U||_F^2 + ||V||_F^2)
+                 + 0.5*beta*(||(-U)_+||_F^2 + ||(-V)_+||_F^2).
 
-    where (-U)_+ = max(-U,0) elementwise.
+    Here (-U)_+ = max(-U, 0) entrywise. Larger beta penalizes negative
+    entries more strongly; beta is a direct weight, not an inverse weight.
 
-    Relation to the paper's equation (27):
-        paper ridge coefficient alpha = lam / 2,
-        paper penalty coefficient 1 / (2*beta) = mu.
-    Thus, to use paper parameters alpha and beta, pass
-        lam = 2*alpha, mu = 1 / (2*beta).
-    The code stores V transposed relative to equation (27), so U @ V.T
-    here corresponds to U @ V in that equation; M is the paper's Y.
+    Migration from the previous code: alpha = old lam, beta = 2*old mu,
+    and V = old V.T. Repack stored factor vectors after transposing V.
+    The experiment settings alpha = 0.01, beta = 200 preserve the previous
+    objective (lam = 0.01, mu = 100). The defaults likewise preserve the
+    old default weights. This follows the revised formula supplied by the
+    authors; older paper PDFs may still use alpha and 1/(2*beta) instead.
 
-    Appendix E.2 uses beta = 1/200, matching the notebooks' mu = 100.
-    Its alpha = 0.01 would require lam = 0.02; the current notebooks use
-    lam = 0.01 (effective alpha = 0.005). This discrepancy is unresolved.
-
-    The variable z is the concatenation:
-        z = [vec(U); vec(V)]  in R^{m*r + n*r}.
+    z = [vec(U); vec(V)] is a vector of length (m + n)*r in row-major order.
     """
 
-    def __init__(self, M, r, lam=1e-4, mu=1.0):
+    def __init__(self, M, r, alpha=1e-4, beta=2.0):
         self.M = np.asarray(M, dtype=np.float64)
         self.m, self.n = self.M.shape
         self.r = int(r)
-        self.lam = float(lam)  # Twice the paper's ridge coefficient alpha.
-        self.mu = float(mu)    # Direct penalty multiplier: 1 / (2*beta).
+        self.alpha = float(alpha)  # Ridge term: alpha/2 times squared norms.
+        self.beta = float(beta)    # Penalty term: beta/2 times squared negative parts.
 
     # ---- Convert between matrix factors and the solver's single vector ----
     def unpack(self, z):
-        """Split a vector of length (m + n)*r into U (m, r) and V (n, r).
+        """Split a vector of length (m + n)*r into U (m, r) and V (r, n).
 
         Entries are stored row by row (NumPy's default C order): all of U,
         followed by all of V. This also splits a search direction into dU,
@@ -133,12 +129,12 @@ class PositiveMatrixFactorization:
         m, n, r = self.m, self.n, self.r
         # The first m*r entries hold U; restore its m rows and r columns.
         U = z[:m*r].reshape(m, r)
-        # The remaining n*r entries hold V; restore its n rows and r columns.
-        V = z[m*r:].reshape(n, r)
+        # The remaining r*n entries hold V; restore its r rows and n columns.
+        V = z[m*r:].reshape(r, n)
         return U, V
 
     def pack(self, U, V):
-        """Flatten U (m, r) and V (n, r) into one vector of length (m + n)*r.
+        """Flatten U (m, r) and V (r, n) into one vector of length (m + n)*r.
 
         The solver works with a single vector rather than two matrices.
         Use the same layout for factor values, gradient blocks, and Hessian
@@ -150,41 +146,41 @@ class PositiveMatrixFactorization:
 
     # ---- objective ----
     def func(self, z):
-        """Evaluate the objective with reconstruction residual R = U V^T - M."""
+        """Evaluate the revised equation (27), with R = U V - M."""
         U, V = self.unpack(z)
-        R = U @ V.T - self.M  # (m,n)
+        R = U @ V - self.M  # (m, n)
 
         rec = 0.5 * np.sum(R * R)
-        reg = 0.5 * self.lam * (np.sum(U * U) + np.sum(V * V))
-
-        # hinge nonnegativity penalty: ||(-U)_+||^2 = sum(max(-U,0)^2)
-        pen = self.mu * (np.sum(np.maximum(-U, 0.0)**2) + np.sum(np.maximum(-V, 0.0)**2))
-
+        reg = 0.5 * self.alpha * (np.sum(U * U) + np.sum(V * V))
+        pen = 0.5 * self.beta * (
+            np.sum(np.maximum(-U, 0.0)**2) + np.sum(np.maximum(-V, 0.0)**2)
+        )
         return rec + reg + pen
 
     def penalty(self, z):
+        """Return beta/2 times the squared negative parts of U and V."""
         U, V = self.unpack(z)
-        pen = self.mu * (np.sum(np.maximum(-U, 0.0)**2) + np.sum(np.maximum(-V, 0.0)**2))
-        return pen
-    
+        return 0.5 * self.beta * (
+            np.sum(np.maximum(-U, 0.0)**2) + np.sum(np.maximum(-V, 0.0)**2)
+        )
+
     # ---- gradient ----
     def grad(self, z):
-        """Return the packed gradient; the data-fit blocks are R V and R^T U."""
+        """Return the packed gradient; the data-fit blocks are R V^T and U^T R."""
         U, V = self.unpack(z)
-        R = U @ V.T - self.M
+        R = U @ V - self.M
 
-        # grad of 0.5||R||^2
-        gU = R @ V
-        gV = R.T @ U
+        # Gradient of 0.5 * ||R||_F^2.
+        gU = R @ V.T
+        gV = U.T @ R
 
-        # add grad of 0.5*lam(||U||^2  + ||V||^2)
-        gU += self.lam * U
-        gV += self.lam * V
+        # Gradient of alpha/2 times the squared factor norms.
+        gU += self.alpha * U
+        gV += self.alpha * V
 
-        # add grad of mu * (||(-U)_+||^2 + ||(-V)_+||^2):
-        # for u<0 : d/d u ( (-u)^2 ) = 2u    ; for u>=0 : 0
-        gU += 2.0 * self.mu * (U * (U < 0.0))
-        gV += 2.0 * self.mu * (V * (V < 0.0))
+        # d/du [beta/2 * max(-u, 0)^2] = beta * min(u, 0).
+        gU += self.beta * np.minimum(U, 0.0)
+        gV += self.beta * np.minimum(V, 0.0)
 
         return self.pack(gU, gV)
 
@@ -192,17 +188,17 @@ class PositiveMatrixFactorization:
     def hess_gn(self, z):
         """Return a callable applying the Gauss-Newton approximation at z.
 
-        For R = U V^T - M, its directional derivative is
-            dR = dU V^T + U dV^T.
-        The data-fit blocks are dR V and dR^T U. Gauss-Newton omits
-        the residual terms R dV and R^T dU from the exact Hessian.
-        Ridge and penalty curvature are included. For lam, mu >= 0,
+        For R = U V - M, its directional derivative is
+            dR = dU V + U dV.
+        The data-fit blocks are dR V^T and U^T dR. Gauss-Newton omits
+        the residual terms R dV^T and dU^T R from the exact Hessian.
+        Ridge and penalty curvature are included. For alpha, beta >= 0,
         the resulting operator is positive semidefinite.
         """
         U, V = self.unpack(z)
         # Freeze the evaluation point for reuse in lazy Hessian updates.
         U, V = U.copy(), V.copy()
-        lam, mu = self.lam, self.mu
+        alpha, beta = self.alpha, self.beta
 
         # At zero entries choose zero generalized penalty curvature.
         maskU = (U < 0.0).astype(np.float64)
@@ -210,19 +206,19 @@ class PositiveMatrixFactorization:
 
         def Hv(v):
             dU, dV = self.unpack(v)
-            dR = dU @ V.T + U @ dV.T  # (m, n): directional change of R
+            dR = dU @ V + U @ dV  # (m, n): directional change of R
 
             # Gauss-Newton contribution from 0.5 * ||R||_F^2.
-            HvU = dR @ V
-            HvV = dR.T @ U
+            HvU = dR @ V.T
+            HvV = U.T @ dR
 
             # Ridge curvature.
-            HvU += lam * dU
-            HvV += lam * dV
+            HvU += alpha * dU
+            HvV += alpha * dV
 
             # Nonnegativity penalty curvature.
-            HvU += 2.0 * mu * (maskU * dU)
-            HvV += 2.0 * mu * (maskV * dV)
+            HvU += beta * (maskU * dU)
+            HvV += beta * (maskV * dV)
 
             return self.pack(HvU, HvV)
 
@@ -232,20 +228,21 @@ class PositiveMatrixFactorization:
     def hess(self, z):
         """Return a callable applying the Hessian at z without forming it.
 
-        R = U V^T - M and dR = dU V^T + U dV^T give the product rules
-            d(R V)   = dR V   + R dV,
-            d(R^T U) = dR^T U + R^T dU.
-        These are the data-fit Hessian blocks. Ridge and penalty curvature
-        are added below. At zero factor entries, the penalty is not twice
-        differentiable (but the derivative is semismooth) choose zero from 
-        its generalized curvature [0, 2*mu] for mu >= 0. 
-        Away from these kinks, this is the classical Hessian.
+        R = U V - M and dR = dU V + U dV give the product rules
+            d(R V^T) = dR V^T + R dV^T,
+            d(U^T R) = dU^T R + U^T dR.
+        These are the data-fit Hessian blocks. In expanded form their
+        diagonal terms are dU (V V^T) and (U^T U) dV.
+        Ridge and penalty curvature are added below. At zero factor entries,
+        the penalty is not twice differentiable, but its gradient is
+        semismooth. Choose zero from its generalized curvature [0, beta]
+        for beta >= 0. Away from these kinks, this is the classical Hessian.
         """
         U, V = self.unpack(z)
         # Freeze the evaluation point for reuse in lazy Hessian updates.
         U, V = U.copy(), V.copy()
-        R = U @ V.T - self.M  # (m, n): residual at the evaluation point
-        lam, mu = self.lam, self.mu
+        R = U @ V - self.M  # (m, n): residual at the evaluation point
+        alpha, beta = self.alpha, self.beta
 
         # At zero entries choose zero generalized penalty curvature.
         maskU = (U < 0.0).astype(np.float64)
@@ -253,19 +250,19 @@ class PositiveMatrixFactorization:
 
         def Hv(v):
             dU, dV = self.unpack(v)
-            dR = dU @ V.T + U @ dV.T  # (m, n): directional change of R
+            dR = dU @ V + U @ dV  # (m, n): directional change of R
 
-            # Product rule for the gradient blocks R @ V and R.T @ U.
-            HvU = dR @ V + R @ dV
-            HvV = dR.T @ U + R.T @ dU
+            # Product rule for the gradient blocks R @ V.T and U.T @ R.
+            HvU = dR @ V.T + R @ dV.T
+            HvV = dU.T @ R + U.T @ dR
 
             # Ridge curvature.
-            HvU += lam * dU
-            HvV += lam * dV
+            HvU += alpha * dU
+            HvV += alpha * dV
 
             # Nonnegativity penalty curvature.
-            HvU += 2.0 * mu * (maskU * dU)
-            HvV += 2.0 * mu * (maskV * dV)
+            HvU += beta * (maskU * dU)
+            HvV += beta * (maskV * dV)
 
             return self.pack(HvU, HvV)
 
