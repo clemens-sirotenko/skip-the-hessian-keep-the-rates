@@ -237,8 +237,9 @@ class PositiveMatrixFactorization:
             d(R^T U) = dR^T U + R^T dU.
         These are the data-fit Hessian blocks. Ridge and penalty curvature
         are added below. At zero factor entries, the penalty is not twice
-        differentiable; choose zero from its generalized curvature [0, 2*mu]
-        for mu >= 0. Away from these kinks, this is the classical Hessian.
+        differentiable (but the derivative is semismooth) choose zero from 
+        its generalized curvature [0, 2*mu] for mu >= 0. 
+        Away from these kinks, this is the classical Hessian.
         """
         U, V = self.unpack(z)
         # Freeze the evaluation point for reuse in lazy Hessian updates.
