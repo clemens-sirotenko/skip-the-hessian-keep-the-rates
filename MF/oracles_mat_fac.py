@@ -96,6 +96,18 @@ class PositiveMatrixFactorization:
 
     where (-U)_+ = max(-U,0) elementwise.
 
+    Relation to the paper's equation (27):
+        paper ridge coefficient alpha = lam / 2,
+        paper penalty coefficient 1 / (2*beta) = mu.
+    Thus, to use paper parameters alpha and beta, pass
+        lam = 2*alpha, mu = 1 / (2*beta).
+    The code stores V transposed relative to equation (27), so U @ V.T
+    here corresponds to U @ V in that equation; M is the paper's Y.
+
+    Appendix E.2 uses beta = 1/200, matching the notebooks' mu = 100.
+    Its alpha = 0.01 would require lam = 0.02; the current notebooks use
+    lam = 0.01 (effective alpha = 0.005). This discrepancy is unresolved.
+
     The variable z is the concatenation:
         z = [vec(U); vec(V)]  in R^{m*r + n*r}.
     """
@@ -104,8 +116,8 @@ class PositiveMatrixFactorization:
         self.M = np.asarray(M, dtype=np.float64)
         self.m, self.n = self.M.shape
         self.r = int(r)
-        self.lam = float(lam)
-        self.mu = float(mu)
+        self.lam = float(lam)  # Twice the paper's ridge coefficient alpha.
+        self.mu = float(mu)    # Direct penalty multiplier: 1 / (2*beta).
 
     # ---- Convert between matrix factors and the solver's single vector ----
     def unpack(self, z):
