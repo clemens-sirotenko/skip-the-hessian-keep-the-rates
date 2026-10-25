@@ -457,8 +457,13 @@ def plot_mf_comparison(histories, styles, output_dir=None):
 
     Both comparison notebooks use this helper. Styles map each method label
     to Matplotlib color/linestyle options. No objective reference is subtracted.
+    If an existing image cannot be overwritten (for example, a Windows
+    preview keeps it mapped), save a uniquely named copy and report its path.
     """
+    import errno
+    import warnings
     from pathlib import Path
+    from uuid import uuid4
 
     if output_dir is not None:
         output_dir = Path(output_dir)
@@ -470,20 +475,38 @@ def plot_mf_comparison(histories, styles, output_dir=None):
     )
     for measure, ylabel, filename in measures:
         fig, axes = plt.subplots(1, 2, figsize=(12, 4.7))
-        for label, history in histories.items():
-            values = np.asarray(history[measure], dtype=float)
-            for ax, x in zip(axes, (history["time"], np.arange(len(values)))):
-                ax.semilogy(x, values, label=label, linewidth=1.8, **styles[label])
-        axes[0].set_xlabel("Runtime (s)")
-        axes[1].set_xlabel("Outer iteration")
-        axes[0].set_ylabel(ylabel)
-        for ax in axes:
-            ax.grid(True, which="both", alpha=0.25)
-        handles, labels = axes[0].get_legend_handles_labels()
-        fig.legend(handles, labels, loc="upper center", ncol=4, frameon=False, fontsize=9)
-        fig.tight_layout(rect=(0, 0, 1, 0.85))
-        if output_dir is not None:
-            for extension in ("png", "svg"):
-                fig.savefig(output_dir / f"{filename}.{extension}", dpi=170, bbox_inches="tight")
-        plt.show()
-        plt.close(fig)
+        try:
+            for label, history in histories.items():
+                values = np.asarray(history[measure], dtype=float)
+                for ax, x in zip(axes, (history["time"], np.arange(len(values)))):
+                    ax.semilogy(x, values, label=label, linewidth=1.8, **styles[label])
+            axes[0].set_xlabel("Runtime (s)")
+            axes[1].set_xlabel("Outer iteration")
+            axes[0].set_ylabel(ylabel)
+            for ax in axes:
+                ax.grid(True, which="both", alpha=0.25)
+            handles, labels = axes[0].get_legend_handles_labels()
+            fig.legend(handles, labels, loc="upper center", ncol=4, frameon=False, fontsize=9)
+            fig.tight_layout(rect=(0, 0, 1, 0.85))
+            if output_dir is not None:
+                for extension in ("png", "svg"):
+                    destination = output_dir / f"{filename}.{extension}"
+                    try:
+                        fig.savefig(destination, dpi=170, bbox_inches="tight")
+                    except OSError as error:
+                        # Windows can reject truncation of an image still held open.
+                        if error.errno not in (errno.EINVAL, errno.EACCES) or not destination.is_file():
+                            raise
+                        alternative = destination.with_name(
+                            f"{filename}_rerun_{uuid4().hex[:8]}.{extension}"
+                        )
+                        fig.savefig(alternative, dpi=170, bbox_inches="tight")
+                        warnings.warn(
+                            f"Could not overwrite {destination} ({error}). "
+                            f"Saved the current plot to {alternative}. "
+                            "Close any preview of the original image before retrying.",
+                            RuntimeWarning, stacklevel=2,
+                        )
+            plt.show()
+        finally:
+            plt.close(fig)
