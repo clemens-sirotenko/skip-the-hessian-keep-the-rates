@@ -1,4 +1,9 @@
 
+# Generated Python bytecode and OS metadata
+__pycache__/
+*.py[cod]
+.DS_Store
+
 # Local paper revision and reviews
 /Lazy_Hessians_Neurips-20.pdf
 /Skip the Hessian, Keep the Rates_ Globalized Semismooth Newton with Lazy Hessian Updates _ OpenReview.pdf
