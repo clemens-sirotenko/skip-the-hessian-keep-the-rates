@@ -43,7 +43,7 @@ class SearchFailureTests(unittest.TestCase):
         for solver in self.solvers:
             with self.subTest(solver=solver.__name__):
                 # A finite ascent step must not be used after exhausting retries.
-                with patch.object(methods, "minres_compat", return_value=(np.ones(1), 0)):
+                with patch.object(methods, "minres", return_value=(np.ones(1), 0)):
                     x, status, history = self.run_solver(solver)
                 assert_allclose(x, [1.0])
                 self.assertEqual(status, "line_search_failed, 0 iters")
@@ -61,7 +61,7 @@ class SearchFailureTests(unittest.TestCase):
                         if failure == "solver_status":
                             return np.ones(1), -1
                         return np.full(1, np.nan), 0
-                    with patch.object(methods, "minres_compat", side_effect=fail):
+                    with patch.object(methods, "minres", side_effect=fail):
                         x, status, _ = self.run_solver(solver)
                     assert_allclose(x, [1.0])
                     self.assertTrue(status.startswith("line_search_failed"))
@@ -77,7 +77,7 @@ class SearchFailureTests(unittest.TestCase):
                     if len(calls) == 1:
                         return exact_scalar_solve(operator, rhs)
                     return np.ones(1), 0
-                with patch.object(methods, "minres_compat", side_effect=once):
+                with patch.object(methods, "minres", side_effect=once):
                     x, status, history = self.run_solver(solver)
                 assert_allclose(x, [0.5])
                 self.assertEqual(status, "line_search_failed, 1 iters")
@@ -94,7 +94,7 @@ class SearchFailureTests(unittest.TestCase):
                             return original(x)
                         return np.inf if bad_value == "func" else np.full_like(x, np.nan)
                     setattr(oracle, bad_value, bad)
-                    with patch.object(methods, "minres_compat", return_value=(np.array([-0.25]), 0)):
+                    with patch.object(methods, "minres", return_value=(np.array([-0.25]), 0)):
                         x, status, history = self.run_solver(solver, oracle)
                     assert_allclose(x, [1.0])
                     self.assertTrue(status.startswith("line_search_failed"))
@@ -103,7 +103,7 @@ class SearchFailureTests(unittest.TestCase):
     def test_unrepresentable_step_stops_without_claiming_success(self):
         for solver in self.solvers:
             with self.subTest(solver=solver.__name__):
-                with patch.object(methods, "minres_compat", return_value=(np.array([-1e-300]), 0)) as solve:
+                with patch.object(methods, "minres", return_value=(np.array([-1e-300]), 0)) as solve:
                     x, status, _ = self.run_solver(solver)
                 assert_allclose(x, [1.0])
                 self.assertEqual(status, "numerical_stagnation, 0 iters")
@@ -112,7 +112,7 @@ class SearchFailureTests(unittest.TestCase):
     def test_invalid_regularization_does_not_enter_the_linear_solver(self):
         for solver in self.solvers:
             with self.subTest(solver=solver.__name__):
-                with patch.object(methods, "minres_compat") as solve:
+                with patch.object(methods, "minres") as solve:
                     x, status, _ = self.run_solver(solver, H_0=np.inf)
                 assert_allclose(x, [1.0])
                 self.assertTrue(status.startswith("invalid_regularization"))
@@ -122,7 +122,7 @@ class SearchFailureTests(unittest.TestCase):
         for solver in self.solvers:
             for trace in (True, False):
                 with self.subTest(solver=solver.__name__, trace=trace):
-                    with patch.object(methods, "minres_compat", side_effect=exact_scalar_solve):
+                    with patch.object(methods, "minres", side_effect=exact_scalar_solve):
                         x, status, history = self.run_solver(solver, trace=trace)
                     self.assertLess(np.linalg.norm(x), 0.5)
                     self.assertEqual(status, "iterations_exceeded")

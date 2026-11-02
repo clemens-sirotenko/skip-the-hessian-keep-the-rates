@@ -6,7 +6,7 @@ Unless a function documents a label-to-history mapping, histories and styles
 are parallel lists in method order. A history records objective ``func``, full
 ``grad_norm``, weighted nonnegativity ``penalty``, and elapsed ``time`` in seconds.
 Plotting thresholds only affect displayed curves; they never stop optimization.
-Log-scaled y-axes require positive values.
+Penalty panels in ``plot_figures`` use a linear scale near zero and log above it.
 """
 
 import numpy as np
@@ -77,8 +77,11 @@ def plot_figures(
     recorded objective across the supplied histories, not a certified global
     optimum. Pass zero for gradient norms or penalties. ``n_iters`` optionally
     caps the number of recorded entries per method, including the initial one.
-    ``threshold`` includes the first entry at or below the threshold and hides
-    later entries, even for nonmonotone curves; it never stops a solver.
+    ``threshold`` trims objective/gradient curves after their first threshold hit.
+    Penalty curves retain every entry: zero penalty can be followed by positive
+    values. Their y-axis is linear up to ``threshold`` and logarithmic above it,
+    so exact zeros stay visible. A nonpositive/None threshold uses 1e-10 for this
+    linear region. None disables trimming of other measures.
 
     ``max_iter`` limits only the iteration axis, so longer runtime curves
     remain visible. ``n``, ``m``, ``mu_str``, and ``filename`` are unused legacy
@@ -98,44 +101,60 @@ def plot_figures(
     if suptitle:
         fig.suptitle(suptitle, fontsize=16)
 
+    penalty_scale = threshold if threshold is not None and threshold > 0 else 1e-10
+    for ax, measure in ((ax1, which_measure_1), (ax2, which_measure_2)):
+        if measure == "penalty":
+            ax.set_yscale("symlog", linthresh=penalty_scale)
+        else:
+            ax.set_yscale("log")
+
+    def first_hit_index(resid, measure):
+        if measure == "penalty" or threshold is None:
+            return len(resid)
+        hits = np.flatnonzero(resid <= threshold)
+        return hits[0] + 1 if hits.size else len(resid)
+
     for i in range(len(histories)):
         resid = np.array(histories[i][which_measure_1]) - f_best
         resid_2 = np.array(histories[i][which_measure_2]) - f_best
 
         print(f"Last {ylabel} of {labels[i]}: {resid_2[-1]}")
 
-        def first_hit_index(resid, threshold):
-            """Return the slice length including the first threshold hit, or all entries."""
-            # Scan in recorded order: gradient norms may increase between steps.
-            hits = np.flatnonzero(resid <= threshold)
-            return (hits[0] + 1) if hits.size else len(resid)
-
         # Apply the optional entry cap and threshold separately to both panels.
         n_iter = n_iters[i] if n_iters is not None else resid.shape[0]
-        n_iter = min(n_iter, first_hit_index(resid, threshold))
+        n_iter = min(n_iter, first_hit_index(resid, which_measure_1))
         n_iter_2 = (
             n_iters[i] if n_iters is not None else resid_2.shape[0]
         )
         n_iter_2 = min(
-            n_iter_2, first_hit_index(resid_2, threshold)
+            n_iter_2, first_hit_index(resid_2, which_measure_2)
         )
 
-        ax1.semilogy(
+        ax1.plot(
             histories[i]["time"][0:n_iter],
             resid[0:n_iter],
             label=labels[i],
             linestyle=linestyles[i],
             color=colors[i],
             linewidth=linewidths[i],
+            marker="o" if which_measure_1 == "penalty" and n_iter == 1 else None,
         )
-        ax2.semilogy(
+        ax2.plot(
             range(n_iter_2),
             resid_2[0:n_iter_2],
             label=labels[i],
             linestyle=linestyles[i],
             color=colors[i],
             linewidth=linewidths[i],
+            marker="o" if which_measure_2 == "penalty" and n_iter_2 == 1 else None,
         )
+
+    for ax, measure in ((ax1, which_measure_1), (ax2, which_measure_2)):
+        if measure == "penalty":
+            # Leave room below zero so a zero curve does not hide behind the axis.
+            ax.set_ylim(bottom=-0.1 * penalty_scale)
+            if not any(np.any(line.get_ydata() > 0) for line in ax.lines):
+                ax.set_ylim(top=penalty_scale)
 
     ax1.set_xlabel(xlabel, fontsize=14)
     ax1.set_ylabel(ylabel, fontsize=14)

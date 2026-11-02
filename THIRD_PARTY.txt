@@ -19,3 +19,14 @@ Third-party assets
    URL: https://scikit-learn.org/
    License: BSD-3-Clause
    Used for: synthetic classification data generation.
+
+5. GALAHAD GLRT (optional Python distribution: galahad-optrove)
+   Source: https://github.com/ralna/GALAHAD
+   Documentation: https://ralna.github.io/galahad_docs/html/Python/glrt.html
+   License: BSD-3-Clause (upstream library and interface retain their notices)
+   Use: Established Lanczos solver for MF cubic Newton subproblems. The local
+   adapter calls the installed library; it does not copy the solver source.
+   Method reference: Cartis, Gould and Toint (2011), Adaptive cubic
+   regularisation methods for unconstrained optimization. Part I: motivation,
+   convergence and numerical results. Mathematical Programming 127, 245-295.
+   DOI: https://doi.org/10.1007/s10107-009-0286-5 (Section 6.2).

@@ -1,7 +1,9 @@
 
-# Generated Python bytecode and OS metadata
+# Generated Python bytecode, notebook checkpoints, profiles, and OS metadata
 __pycache__/
 *.py[cod]
+.ipynb_checkpoints/
+*.prof
 .DS_Store
 
 # Local paper revision and reviews
@@ -13,3 +15,6 @@ __pycache__/
 
 # Regenerable multiple-seed plotting data
 /MF/mf_results_multiple.pkl
+
+# Optional exports from the parallel-seed notebook
+/MF/parallel_results/
