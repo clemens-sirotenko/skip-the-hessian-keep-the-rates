@@ -1,5 +1,42 @@
 # Methods audit, 2026-11-02
 
+## Notebook dependency cleanup, 2026-11-03
+
+Removed ten MF test files and the local ARC test file after all 109 tests
+passed. Removed unused solvers from `methods_mat_fac.py` and
+`methods_legacy.py`, duplicate oracle definitions, unused plotting functions,
+and generated caches. `utils_new.run_methods` now uses the existing runner
+from `utils.py`. Alternating descent, the older dense cubic entry point, both
+cubic backends, all plotting helpers used by notebooks, and the local ARC
+experiment remain. The local ARC folder is still excluded from Git.
+
+The three older experiment notebooks now import their dependencies explicitly.
+Two unused residual reads were removed from each. One of those reads accessed
+`func_at_lssolve` on PALM and would fail with the current alternating notebook's
+method order; its plots already use `func`, so removing the read does not
+change a plotted value. Other settings, seeds, outputs and user edits are
+preserved. All retained solver and plotting function bodies are unchanged;
+the oracle counter only loses unused interfaces. No acceptance test, tolerance,
+Hessian reuse policy, initialization, regularization or subproblem solve changed.
+
+Before/after checks compare 44 runs at dimensions (6,4,2), seeds 549/498,
+noise .2, alpha .01, beta 500 and initial factor standard deviation .05.
+They cover gradient and alternating descent, LeAP/GLAd with exact/GN and
+fresh/lazy Hessians, dense cubic, GLRT, the legacy cubic wrapper and ARC.
+Final iterates, statuses, non-timing histories and MF metrics match exactly.
+The 82 local notebook imports resolve. All eight experiment notebooks
+(including local ARC) and five plotting notebooks execute from fresh kernels
+with small settings; plotting inputs come from those isolated small runs.
+These are correctness checks, not a reproduction or timing benchmark.
+
+Validation used Windows 11, Python 3.12.14, NumPy 2.4.6, SciPy 1.18.0,
+GALAHAD 5.5.3 and float64, with one BLAS/OpenMP thread. The parallel check
+used two seed workers. Tests, original sources, data and validation artifacts
+are preserved in a `mf-cleanup-20261103-*` recovery directory in the local
+temporary folder. Existing reference outputs and historical diagnostics remain.
+Paper alignment is unchanged: arXiv:2602.08069v1, Section 5.2 / Appendix E.2;
+see `CUBIC_SUBPROBLEM.md` and notebook settings for figure inputs and parameters.
+
 This audit separates structural cleanup from numerical corrections. Notebook
 settings, seeds, saved results and figures were not edited. The initial audit
 preserved public imports; subsequent changes below record their locations and removals.

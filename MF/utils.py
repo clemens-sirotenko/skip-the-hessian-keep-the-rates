@@ -1,10 +1,10 @@
+"""Runners and original plotting layouts used by the MF notebooks.
+
+The newer multiple-seed layouts live in utils_new.py; figures keep their
+existing aggregation, stopping thresholds and axis conventions.
+"""
 import numpy as np
 import matplotlib.pyplot as plt
-
-from oracles_mat_fac import *
-
-
-# from scipy.sparse import diags
 
 
 def run_methods(methods_to_run, oracle, x_0):
@@ -107,106 +107,6 @@ def plot_figures(
     ax1.grid()
     ax2.grid()
     plt.tight_layout()  # Added tight_layout after legend for better fit
-
-
-def plot_for_paper(
-    histories,
-    labels,
-    n,
-    m,
-    mu_str,
-    colors,
-    linewidths,
-    linestyles,
-    n_iters=None,
-    threshold=1e-8,
-    filename=None,
-    f_star=None,
-    suptitle=None,
-    max_iter=1000,
-    pair_1=["time", "func"],
-    pair_2=["None", "func"],
-    pair_3=["time", "func"],
-    pair_4=["None", "func"],
-    ylabel="Func. residual",
-):
-    all_pairs = [
-        ["time", "func"],
-        [None, "func"],
-        ["time", "grad_norm"],
-        [None, "grad_norm"],
-    ]
-
-    f_best_for_grad = 0
-    f_best_for_func = f_star
-
-    fig, axes = plt.subplots(2, 2, figsize=(10, 4))  # 2x2 grid
-    axes = axes.flatten()  # turn into a simple list: axes[0], axes[1], axes[2], axes[3]
-
-    for i in range(len(histories)):
-        resid_all = []
-        for which_measure in [
-            all_pairs[0][1],
-            all_pairs[1][1],
-            all_pairs[2][1],
-            all_pairs[3][1],
-        ]:
-            if (
-                which_measure == "func_at_lssolve"
-                or which_measure == "func_at_acceptance"
-                or which_measure == "func"
-            ):
-                f_best = f_best_for_func
-            else:
-                f_best = f_best_for_grad
-            resid_all.append(np.array(histories[i][which_measure]) - f_best)
-
-        n_iter_all = []
-        for q in range(4):
-            n_iter_all.append(resid_all[q].shape[0])
-            # TODO:
-        for q in range(4):
-            n_iter_all[q] = min(
-                n_iter_all[q], np.searchsorted(-resid_all[q], -threshold) + 1
-            )
-        for j, ax in enumerate(axes):
-            if all_pairs[j][0] is None:
-                xquantity = range(n_iter_all[j])
-            else:
-                xquantity = histories[i][all_pairs[j][0]][0 : n_iter_all[j]]
-
-            if True:  # all_pairs[j][0] != None or labels.index("Gradient Method") != i:
-                ax.semilogy(
-                    xquantity,
-                    resid_all[j][0 : n_iter_all[j]],  # j+1 if resid_all[0] is dummy
-                    label=labels[i],
-                    linestyle=linestyles[i],
-                    color=colors[i],
-                    linewidth=linewidths[i],
-                )
-                ax.set_xlabel("Time" if all_pairs[j][0] is not None else "Iteration")
-                if (
-                    all_pairs[j][1] == "func"
-                    or all_pairs[j][1] == "func_at_lssolve"
-                    or all_pairs[j][1] == "func_at_acceptance"
-                ):
-                    ylabel = "Function residual"
-                else:
-                    ylabel = "Gradient norm"
-                ax.set_ylabel(ylabel)
-                ax.grid(True, which="both", linestyle="--", linewidth=0.5)
-
-                # Optional: title per subplot — change as needed
-                # ax.set_title(f"Residual {j+1}")
-
-    # Shared legend
-    handles, legend_labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, legend_labels, loc="upper center", ncol=3)
-
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
-    plt.savefig("plot_for_paper.pdf")  # creates a PGF file (LaTeX/PGF code)
-
-    plt.show()
 
 
 def plot_for_paper_2(
@@ -369,87 +269,6 @@ def plot_for_paper_penalty(
     plt.tight_layout()
     plt.savefig(filename)
     plt.show()
-
-
-def plot_particular_parameter(
-    parameter_history,
-    title=None,
-    x_label="Iterations",
-    y_label="Regularization parameter",
-):
-    """
-    Plots the regularization parameters over iterations.
-    """
-    fig, ax = plt.subplots(figsize=(8, 4))
-    x = list(range(1, len(parameter_history) + 1))
-
-    ax.plot(x, parameter_history)
-
-    ax.set_xlabel(x_label, fontsize=14)
-    ax.set_ylabel(y_label, fontsize=14)
-    ax.set_title(title, fontsize=16)
-    ax.legend(fontsize=12)
-    ax.grid()
-
-
-def plot_graphs(
-    histories,
-    labels,
-    n,
-    m,
-    mu_str,
-    colors,
-    linewidths,
-    linestyles,
-    n_iters=None,
-    threshold=1e-8,
-    filename=None,
-    f_star=None,
-    suptitle=None,
-    max_iter=1000,
-):
-    if f_star is None:
-        f_best = min(histories[0]["func"])
-        for i in range(1, len(histories)):
-            f_best = min(f_best, min(histories[i]["func"]))
-    else:
-        f_best = f_star
-
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4))
-    if suptitle:
-        fig.suptitle(suptitle, fontsize=16)
-
-    for i in range(len(histories)):
-        resid = np.array(histories[i]["func"]) - f_best
-        n_iter = n_iters[i] if n_iters is not None else resid.shape[0]
-        n_iter = min(n_iter, np.searchsorted(-resid, -threshold) + 1)
-
-        ax1.semilogy(
-            resid[0 : min(n_iter, max_iter)],
-            label=labels[i],
-            color=colors[i],
-            linestyle=linestyles[i],
-            linewidth=linewidths[i],
-        )
-        ax2.semilogy(
-            histories[i]["time"][0:n_iter],
-            resid[0:n_iter],
-            label=labels[i],
-            linestyle=linestyles[i],
-            color=colors[i],
-            linewidth=linewidths[i],
-        )
-
-    ax1.set_xlabel("Iterations", fontsize=14)
-    ax1.set_ylabel("Func. residual", fontsize=14)
-    ax2.set_xlabel("Time", fontsize=14)
-    ax1.legend(fontsize=12)
-    ax1.grid()
-    ax2.grid()
-    # plt.tight_layout()
-    if filename:
-        print("output: %s" % filename)
-        plt.savefig(filename)
 
 
 def plot_mf_comparison(histories, styles, output_dir=None):

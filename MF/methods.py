@@ -1,10 +1,9 @@
 """Parallel matrix-factorization solvers and the alternating-gradient baseline.
 
 Public solvers: gradient_method, alternating_gradient_method, mf_leapssn,
-mf_gladssn and cubic_newton_nonconvex_new. Other baselines live in
-methods_legacy.py; the dense cubic reference in cubic_subproblems.py;
-GALAHAD in cubic_glrt.py.
-See CUBIC_SUBPROBLEM.md for references and METHODS_AUDIT.md for validation.
+mf_gladssn and cubic_newton_nonconvex_new. The older dense cubic entry point
+lives in methods_legacy.py; cubic backends in cubic_subproblems.py and
+cubic_glrt.py. See CUBIC_SUBPROBLEM.md for references and validation.
 Framework attribution remains in ../THIRD_PARTY.txt.
 
 Inputs are assumed valid: real vectors, positive step/regularization parameters,

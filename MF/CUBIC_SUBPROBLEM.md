@@ -128,13 +128,15 @@ still fails if its independent residual is too large.
 
 ## Legacy entry points: correctness changes
 
-`methods_legacy.cubic_newton_step` delegates to the dense global reference. Its old scalar
-root search could select a nonglobal stationary point for an indefinite
+The older cubic implementation's scalar root search could select a nonglobal
+stationary point for an indefinite
 Hessian: `g=[1]`, `A=[[-2]]`, `H=1` returned step `[1]` and positive model
 change `1/3`. The global step is `[-1-sqrt(2)]`.
-The legacy linear-solver keywords remain accepted for caller compatibility
-but no longer control this dense solve. This changes backend, cost and possibly
-trajectories; the legacy step is no longer a matrix-free implementation.
+The retained `methods_legacy.cubic_newton` wrapper uses the dense global
+reference. Its legacy linear-solver keywords remain accepted for notebook
+compatibility but do not control the dense solve. This earlier backend change
+affects cost and possibly trajectories; the wrapper is not matrix-free.
+The unused standalone legacy step wrapper was removed during cleanup.
 
 The `cubic_newton` signature retains its metric, objective-target and adaptive
 search controls. It now checks solve status and accepted candidates, preserves
@@ -224,8 +226,16 @@ convention for the Figure 4 metric, not a claim of exact paper reproduction.
 
 ## Validation
 
-The current suite passes 100 unit tests, including penalty display,
-representative-selection, mean-alignment and target-cutoff regressions.
+Before the 2026-11-03 cleanup, all 100 MF tests and nine local ARC tests passed.
+The test files were then removed at the author's request. The cleanup removes
+unused baselines, duplicate oracle classes and unused plotting helpers; it
+retains alternating descent and every notebook dependency. All 44 focused
+before/after runs match exactly in iterates, statuses, non-timing histories
+and MF metrics. Tests and pre-cleanup sources remain in a recovery copy outside
+the repository. See [the audit](METHODS_AUDIT.md) for the validation record.
+
+Earlier validation included penalty display, representative-selection,
+mean-alignment and target-cutoff regressions.
 Simplifying `methods.py` preserves all
 62 small solver runs exactly in final iterates, statuses and non-timing histories,
 including dense and GLRT. The dense solver and GLRT adapter are unchanged.
