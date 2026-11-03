@@ -139,6 +139,7 @@ def plot_mean_gradient_histories(seed_histories, method_colors, *,
                                  method_linestyles=None, target=None, flat_tail_rtol=None):
     """Plot all-seed arithmetic means, returning (figure, numeric summaries).
 
+    Prepare each panel's data and cutoffs, then draw both with plot_figures.
     Optional limits zoom the view without changing the computed means.
     The y axis is logarithmic above zero_scale and linear near zero so exact
     zeros remain visible. This is a mean of norms, not a norm of mean gradients.

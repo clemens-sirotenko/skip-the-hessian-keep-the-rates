@@ -91,7 +91,7 @@ def target_summary(seed_histories, methods, target, statuses=None):
 def plot_representative_runs(seed_histories, seed, method_styles, *, zero_scale=1e-14,
                              penalty_zero_scale=None, max_iter=None, max_time=None,
                              selection_label="Representative"):
-    """Three figures showing one seed's complete recorded trajectories.
+    """Use plot_figures for one seed's objective, gradient and penalty histories.
 
     method_styles maps names to color/linestyle dictionaries. Each figure has
     runtime and iteration panels, with no averaging or threshold truncation.

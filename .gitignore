@@ -22,3 +22,8 @@ __pycache__/
 # Local full solver notes and retired implementations
 /MF/_local_reference/
 /MF/METHODS_AUDIT.md
+
+# Superseded multiple-seed notebooks, kept locally
+/MF/experiment_matrix_factorization_multiple_cubic_new_parallel.ipynb
+/MF/experiment_matrix_factorization_multiple_cubic_new.ipynb
+/MF/experiment_matrix_factorization_multiple_new.ipynb
