@@ -1,7 +1,7 @@
 # Cubic baseline for the MF notebooks
 
-Run [the final parallel experiment](experiment_matrix_factorization_multiple_parallel_final.ipynb).
-Set `N_JOBS=1` there for sequential execution.
+Run [the final sequential experiment](experiment_matrix_factorization_multiple_final.ipynb)
+or [the parallel version](experiment_matrix_factorization_multiple_parallel_final.ipynb).
 All MF cubic comparisons now use GALAHAD GLRT.
 
 Install the notebook dependencies in its Python environment, from the repository root:
