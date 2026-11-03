@@ -1,9 +1,8 @@
 """Parallel matrix-factorization solvers and the alternating-gradient baseline.
 
 Public solvers: gradient_method, alternating_gradient_method, mf_leapssn,
-mf_gladssn and cubic_newton_nonconvex_new. The older dense cubic entry point
-lives in methods_legacy.py; cubic backends in cubic_subproblems.py and
-cubic_glrt.py. See CUBIC_SUBPROBLEM.md for references and validation.
+mf_gladssn and cubic_newton_nonconvex_new. The cubic baseline uses GALAHAD
+through cubic_glrt.py. See CUBIC_SUBPROBLEM.md for notebook instructions.
 Framework attribution remains in ../THIRD_PARTY.txt.
 
 Inputs are assumed valid: real vectors, positive step/regularization parameters,
@@ -20,7 +19,6 @@ import scipy.linalg
 from scipy.sparse.linalg import LinearOperator, cg, minres
 
 from cubic_glrt import GLRTCubicSubproblem
-from cubic_subproblems import _prepare_cubic_nonconvex
 from oracles import OracleCallsCounter
 
 
@@ -237,45 +235,20 @@ def _mf_ssn(oracle, x_0, *, n_iters, H_0, adaptive_search, trace, eps,
 
 def cubic_newton_nonconvex_new(oracle, x_0, n_iters=1000, H_0=1.0,
                               trace=True, H_min=1e-5, grad_tol=None,
-                              subproblem_tol=1e-8, subproblem_max_iter=200,
-                              max_backtracks=120, warnings=False,
-                              subproblem_solver="dense", glrt_max_iter=400):
-    """Cubic majorization/backtracking with fresh generalized Hessians.
+                              subproblem_tol=1e-8, glrt_max_iter=400,
+                              max_backtracks=120, warnings=False):
+    """Cubic Newton baseline using GALAHAD GLRT and fresh generalized Hessians.
 
-    x_0:(d,); oracle supplies func, grad, hess and penalty. The model is
-    g.T@s + .5*s.T@A@s + H_k/6*||s||**3. Accept a successful nonpositive model
-    only if f(x+s) <= f(x)+model. Rejection doubles H_k; acceptance halves it
-    with floor H_min. grad_tol bounds ||g||; None disables this stopping test.
-
-    "dense" uses a spectral reference (O(d**3), subproblem_max_iter scalar steps).
-    "glrt" uses GALAHAD (glrt_max_iter per trial); subproblem_tol controls its
-    model-gradient residual relative to ||g||, with a roundoff allowance.
-    GLRT does not certify full-space global optimality. Both reuse the Hessian
-    within a search; dense also reuses its decomposition.
-
-    Return (x, status, history), with history=None if trace=False. Failures keep
-    the last accepted point. See CUBIC_SUBPROBLEM.md and Cartis, Gould & Toint
-    (2011), Theorem 3.1 / Sections 6.1--6.3, doi:10.1007/s10107-009-0286-5.
-    This outer majorization test differs from that paper's ARC ratio test.
+    x_0 and gradients have shape (d,); oracle supplies func, grad, penalty
+    and hess (a symmetric matrix or v -> A v). The model change is
+    g@s + s@A@s/2 + H_k*||s||**3/6. Accept when f(x+s) <= f(x)+model;
+    halve H_k after acceptance (floor H_min), double it after rejection.
+    The Hessian is fixed within a search; each trial starts a new GLRT solve.
+    grad_tol bounds ||g||. subproblem_tol controls the relative model-gradient
+    residual; glrt_max_iter caps each inexact solve, not total HVPs.
+    Return (x, status, history); failures retain the last accepted point.
+    References and limitations: CUBIC_SUBPROBLEM.md.
     """
-    return _cubic_newton(
-        oracle, x_0, n_iters=n_iters, H_0=H_0, trace=trace, H_min=H_min,
-        grad_tol=grad_tol, subproblem_tol=subproblem_tol,
-        subproblem_max_iter=subproblem_max_iter, max_backtracks=max_backtracks,
-        warnings=warnings, subproblem_solver=subproblem_solver,
-        glrt_max_iter=glrt_max_iter,
-    )
-
-
-def _cubic_newton(oracle, x_0, n_iters=1000, H_0=1.0,
-                              trace=True, H_min=1e-5, grad_tol=None,
-                              subproblem_tol=1e-8, subproblem_max_iter=200,
-                              max_backtracks=120, warnings=False,
-                              subproblem_solver="dense", glrt_max_iter=400, B=None,
-                              f_star=None, objective_tol=1e-8, adaptive_search=True,
-                              trace_trials=False):
-    """Shared cubic outer loop; public wrappers define supported controls."""
-    use_glrt = {"dense": False, "glrt": True}[subproblem_solver]
     x = np.array(x_0, dtype=np.float64, copy=True)
 
     start = perf_counter()
@@ -301,16 +274,14 @@ def _cubic_newton(oracle, x_0, n_iters=1000, H_0=1.0,
                                ("subproblem_calls", subproblem_calls),
                                ("time", perf_counter() - start)):
                 history[key].append(value)
-            if use_glrt:
-                history["hess_vec_calls"].append(hvp_calls)
-                history["glrt_iterations"].append(glrt_iterations)
-                history["glrt_status"].append(last_glrt_status)
-                history["subproblem_relative_residual"].append(last_subproblem_residual)
+            history["hess_vec_calls"].append(hvp_calls)
+            history["glrt_iterations"].append(glrt_iterations)
+            history["glrt_status"].append(last_glrt_status)
+            history["subproblem_relative_residual"].append(last_subproblem_residual)
         if not (np.isfinite(f) and np.all(np.isfinite(g)) and np.isfinite(g_norm)):
             status = f"nonfinite_initial_point, {k} iters"
             break
-        if ((grad_tol is not None and g_norm <= grad_tol)
-                or (f_star is not None and f - f_star < objective_tol)):
+        if grad_tol is not None and g_norm <= grad_tol:
             status = f"success, {k} iters"
             break
         if k == n_iters:
@@ -324,15 +295,7 @@ def _cubic_newton(oracle, x_0, n_iters=1000, H_0=1.0,
 
         hessian = oracle.hess(x)
         # Fixed x and g throughout this search; discard after accepting a step.
-        if use_glrt:
-            glrt_model = GLRTCubicSubproblem(g, hessian, progress=report if warnings else None)
-            solve_subproblem = glrt_model.solve
-        elif warnings:
-            preparation_start = perf_counter()
-            solve_subproblem = _prepare_cubic_nonconvex(g, hessian, B=B, progress=report)
-            report(f"Hessian preparation finished in {perf_counter() - preparation_start:.1f}s")
-        else:
-            solve_subproblem = _prepare_cubic_nonconvex(g, hessian, B=B)
+        glrt_model = GLRTCubicSubproblem(g, hessian, progress=report if warnings else None)
         accepted = False
         reason = "line_search_failed"
         for trial in range(max_backtracks + 1):
@@ -340,17 +303,14 @@ def _cubic_newton(oracle, x_0, n_iters=1000, H_0=1.0,
                 reason = "invalid_regularization"
                 break
             subproblem_calls += 1
-            step, model, message = solve_subproblem(
+            step, model, message = glrt_model.solve(
                 0.5 * H_k,
                 eps=subproblem_tol,
-                max_iter=glrt_max_iter if use_glrt else subproblem_max_iter,
+                max_iter=glrt_max_iter,
             )
             if message != "success":
                 reason = "subproblem_" + message
-                if use_glrt:
-                    # Increasing regularization must not conceal an exhausted
-                    # iterative-solve budget or a failed subproblem solve.
-                    break
+                break  # A larger weight must not conceal a failed GLRT solve.
             elif not (np.all(np.isfinite(step)) and np.isfinite(model)):
                 reason = "nonfinite_subproblem"
             elif model > 0:
@@ -366,15 +326,11 @@ def _cubic_newton(oracle, x_0, n_iters=1000, H_0=1.0,
                         f_new = oracle.func(candidate)
                         g_new = oracle.grad(candidate)
                         g_new_norm = _stable_gradient_norm(g_new)
-                    if trace_trials and history is not None:
-                        history["func_at_lssolve"].append(f_new)
-                        history["grad_norm_at_lssolve"].append(g_new_norm)
                     if (np.isfinite(f_new) and np.all(np.isfinite(g_new))
                             and np.isfinite(g_new_norm)
-                            and (not adaptive_search or f_new <= f + model)):
+                            and f_new <= f + model):
                         x, f, g, g_norm = candidate, f_new, g_new, g_new_norm
-                        if adaptive_search:
-                            H_k = max(H_min, 0.5 * H_k)
+                        H_k = max(H_min, 0.5 * H_k)
                         accepted = True
                         if warnings:
                             report(f"accepted trial {trial + 1}, f={f:.6e}, "
@@ -385,13 +341,11 @@ def _cubic_newton(oracle, x_0, n_iters=1000, H_0=1.0,
                 report(f"rejected trial {trial + 1}, H_k={H_k:.3g}, {reason}")
             if trial < max_backtracks:
                 H_k *= 2.0
-        if use_glrt:
-            hvp_calls += glrt_model.hvp_calls
-            glrt_iterations += glrt_model.iterations
-            last_glrt_status = glrt_model.native_status
-            last_subproblem_residual = glrt_model.relative_residual
-            del glrt_model
-        del solve_subproblem  # Release workspace before preparing the next point.
+        hvp_calls += glrt_model.hvp_calls
+        glrt_iterations += glrt_model.iterations
+        last_glrt_status = glrt_model.native_status
+        last_subproblem_residual = glrt_model.relative_residual
+        del glrt_model  # Release workspace before preparing the next point.
         if not accepted:
             status = f"{reason}, {k} iters"
             break
@@ -401,11 +355,10 @@ def _cubic_newton(oracle, x_0, n_iters=1000, H_0=1.0,
         history["grad_calls"][-1] = oracle.grad_calls
         history["hess_calls"][-1] = oracle.hess_calls
         history["subproblem_calls"][-1] = subproblem_calls
-        if use_glrt:
-            history["hess_vec_calls"][-1] = hvp_calls
-            history["glrt_iterations"][-1] = glrt_iterations
-            history["glrt_status"][-1] = last_glrt_status
-            history["subproblem_relative_residual"][-1] = last_subproblem_residual
+        history["hess_vec_calls"][-1] = hvp_calls
+        history["glrt_iterations"][-1] = glrt_iterations
+        history["glrt_status"][-1] = last_glrt_status
+        history["subproblem_relative_residual"][-1] = last_subproblem_residual
     if warnings and not (status.startswith("success") or status == "iterations_exceeded"):
         print("W:", status, "-- returning the last accepted iterate", flush=True)
     return x, status, history

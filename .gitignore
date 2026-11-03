@@ -18,3 +18,7 @@ __pycache__/
 
 # Optional exports from the parallel-seed notebook
 /MF/parallel_results/
+
+# Local full solver notes and retired implementations
+/MF/_local_reference/
+/MF/METHODS_AUDIT.md

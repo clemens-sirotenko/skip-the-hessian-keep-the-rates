@@ -25,7 +25,7 @@ def _load_glrt():
         from galahad import glrt
     except ImportError as error:
         raise ImportError(
-            "GALAHAD GLRT is required for subproblem_solver='glrt'. Install "
+            "GALAHAD GLRT is required for the cubic baseline. Install "
             "the optimization package in this notebook's Python environment: "
             "%pip install -r MF/requirements-glrt.txt (from the repository root), "
             "or %pip install -r requirements-glrt.txt (from MF). "
@@ -47,23 +47,13 @@ def _validate_controls(H, eps, max_iter):
 
 
 class GLRTCubicSubproblem:
-    """Fixed g/A, with diagnostics accumulated across cubic backtracking trials.
+    """Approximately minimize g@s + s@A@s/2 + H*||s||**3/3 with fixed g/A.
 
-    g is a real vector of shape (d,); A is a symmetric matrix, LinearOperator,
-    or callable v -> A v. Each solve minimizes approximately
-
-        g.T @ s + 0.5*s.T @ A @ s + H/3 * ||s||**3.
-
-    H is the scalar cubic weight, not the Hessian. The outer method passes
-    H=H_k/2. GLRT is called with power=3 and the identity norm/preconditioner.
-    Each trial starts a fresh native solve; the same fixed Hessian callable
-    is reused, but no Lanczos state is reused across trials or outer iterates.
-
-    GLRT starts its Krylov space from g. A successful status and small model
-    residual do not certify positive semidefiniteness outside that space.
-    At g=0 this adapter returns zero without a negative-curvature search.
-    Thus success denotes an inexact first-order model solve, not a guaranteed
-    global minimizer. Use the separate dense reference for global validation.
+    g:(d,); A is a symmetric matrix, LinearOperator or v -> A v callable.
+    The cubic baseline passes H=H_k/2; ARC passes its sigma directly.
+    Each solve restarts GLRT; work counts accumulate across trials.
+    Success checks the model-gradient residual, not full-space optimality:
+    the Krylov space may miss negative curvature. At g=0 the step is zero.
     """
 
     def __init__(self, g, A, progress=None):
@@ -97,19 +87,12 @@ class GLRTCubicSubproblem:
         return np.asarray(value, dtype=np.float64)
 
     def solve(self, H, eps=1e-6, max_iter=400):
-        """Return (step, model_change, status), preserving g and operator inputs.
+        """Return (step, model_change, status); failures return zero/NaN.
 
-        eps requests ||g + A s + H*||s||*s|| <= eps*||g||. The returned step
-        is independently checked, allowing an additional float64 roundoff
-        allowance 64*u*(||g|| + ||A s|| + H*||s||**2). fraction_opt=1 keeps
-        the final computed Krylov solution in GLRT's reconstruction pass.
-
-        max_iter limits GLRT iterations (itmax), not total HVPs. All Lanczos
-        vectors are retained (extra_vectors=max_iter+1; O(d*max_iter) storage)
-        to avoid a reconstruction-state issue in the 5.5.3 Python binding.
-        Work counts every native HVP and one extra product for the final check.
-        Iteration exhaustion/failure returns zero, NaN, and a failure status;
-        it must not be interpreted as a usable converged step.
+        Check ||g + A s + H*||s||*s|| <= eps*||g|| plus a roundoff allowance.
+        max_iter caps native iterations; HVP counts include reconstruction
+        and the residual check. Storing max_iter+1 vectors avoids a 5.5.3
+        binding issue, using O(d*max_iter) memory. Inputs are preserved.
         """
         _validate_controls(H, eps, max_iter)
         glrt = _load_glrt()
