@@ -1,6 +1,6 @@
 # Cubic baseline for the MF notebooks
 
-Run [the parallel experiment](experiment_matrix_factorization_multiple_cubic_new_parallel.ipynb)
+Run [the final parallel experiment](experiment_matrix_factorization_multiple_parallel_final.ipynb)
 (or its [serial version](experiment_matrix_factorization_multiple_cubic_new.ipynb)).
 All MF cubic comparisons now use GALAHAD GLRT.
 

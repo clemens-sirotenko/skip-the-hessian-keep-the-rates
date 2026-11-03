@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from scipy.stats import rankdata
+from utils_new import plot_figures
 
 
 def _first_hit(history, target):
@@ -88,7 +89,8 @@ def target_summary(seed_histories, methods, target, statuses=None):
 
 
 def plot_representative_runs(seed_histories, seed, method_styles, *, zero_scale=1e-14,
-                             max_iter=None, max_time=None, selection_label="Representative"):
+                             penalty_zero_scale=None, max_iter=None, max_time=None,
+                             selection_label="Representative"):
     """Three figures showing one seed's complete recorded trajectories.
 
     method_styles maps names to color/linestyle dictionaries. Each figure has
@@ -96,6 +98,7 @@ def plot_representative_runs(seed_histories, seed, method_styles, *, zero_scale=
     The objective reference is the best observed value among these methods for
     this seed. A linear y-region below zero_scale preserves exact zeros; above
     it the scale is logarithmic. Optional x limits only change the view.
+    penalty_zero_scale optionally sets a separate linear region for penalties.
     """
     histories = seed_histories[seed]
     reference = min(np.min(histories[name]["func"]) for name in method_styles)
@@ -103,41 +106,26 @@ def plot_representative_runs(seed_histories, seed, method_styles, *, zero_scale=
                 ("grad_norm", "Gradient norm", 0.0), ("penalty", "Weighted penalty", 0.0)]
     figures = {}
     for measure, ylabel, offset in measures:
-        fig, axes = plt.subplots(1, 2, figsize=(12, 4.8), sharey=True)
-        plotted_values = []
-        for method, style in method_styles.items():
-            history = histories[method]
-            values = np.asarray(history[measure]) - offset
-            plotted_values.append(values)
-            for ax, x in zip(axes, (history["time"], np.arange(len(values)))):
-                ax.plot(x, values, label=method, linewidth=1.8, **style)
-                ax.plot(x[-1], values[-1], "o", color=style["color"],
-                        markerfacecolor="white", markersize=4, label="_nolegend_")
-        for ax, limit, xlabel in zip(axes, (max_time, max_iter), ("Runtime (s)", "Iteration")):
-            ax.set_yscale("symlog", linthresh=zero_scale)
-            if any(np.any(values == 0) for values in plotted_values):
-                ax.set_ylim(bottom=-0.1 * zero_scale)
-            if not any(np.any(values > 0) for values in plotted_values):
-                ax.set_ylim(top=zero_scale)
-            if limit is not None:
-                ax.set_xlim(0, limit)
-            ax.set_xlabel(xlabel)
-            ax.grid(True, which="major", alpha=0.25)
-        axes[0].set_ylabel(ylabel)
-        fig.suptitle(f"Matrix factorization: {selection_label.lower()} seed {seed}", fontsize=14)
-        handles, labels = axes[0].get_legend_handles_labels()
-        fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 0.91),
-                   ncol=min(4, len(method_styles)), fontsize=9, frameon=False)
-        note = f"Circles: recorded endpoints. Linear below {zero_scale:g}, log above."
+        scale = penalty_zero_scale if measure == "penalty" and penalty_zero_scale is not None else zero_scale
+        note = f"Circles: recorded endpoints. Linear below {scale:g}, log above."
         if max_iter is not None:
             note += f" Iteration view: 0-{max_iter:g}."
         if max_time is not None:
             note += f" Runtime view: 0-{max_time:g} s."
         if measure == "func":
             note += "\nReference: best objective observed across these methods for this seed."
-        fig.text(0.5, 0.015, note, ha="center", fontsize=9)
-        fig.tight_layout(rect=(0, 0.075, 1, 0.88))
-        figures[measure] = fig
+        figures[measure] = plot_figures(
+            [histories[name] for name in method_styles], list(method_styles),
+            n=None, m=None, mu_str=None,
+            colors=[style["color"] for style in method_styles.values()],
+            linewidths=[2] * len(method_styles),
+            linestyles=[style.get("linestyle", "-") for style in method_styles.values()],
+            which_measure_1=measure, which_measure_2=measure, f_star=offset,
+            threshold=None, max_time=max_time, max_iter=max_iter, zero_scale=scale,
+            sharey=True, mark_endpoints=True, verbose=False, ylabel=ylabel,
+            suptitle=f"Matrix Factorization: {selection_label.lower()} seed {seed}",
+            note=note,
+        )
     return figures
 
 

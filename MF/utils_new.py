@@ -1,4 +1,4 @@
-"""Runtime/iteration plots for the newer multiple-seed MF notebooks.
+"""Plots and all-seed gradient means for the MF notebooks.
 
 Histories contain func, grad_norm, penalty and time. Plot thresholds affect
 display only; penalty panels retain zeros and later rebounds.
@@ -10,125 +10,325 @@ from utils import run_methods
 
 
 def plot_figures(
-    histories,
-    labels,
-    n,
-    m,
-    mu_str,
-    colors,
-    linewidths,
-    linestyles,
-    n_iters=None,
-    threshold=1e-8,
-    filename=None,
-    f_star=None,
-    suptitle=None,
-    max_iter=1000,
-    which_measure_1="func",
-    which_measure_2="func_at_lssolve",
-    ylabel="Func. residual",
-    xlabel="Runtime (s)",
+    histories, labels, n, m, mu_str, colors, linewidths, linestyles,
+    n_iters=None, threshold=1e-8, filename=None, f_star=None, suptitle=None,
+    max_iter=1000, which_measure_1="func", which_measure_2="func_at_lssolve",
+    ylabel="Func. residual", xlabel="Runtime (s)", *, max_time=None,
+    zero_scale=None, sharey=False, runtime_steps=False, mark_endpoints=False,
+    note=None, verbose=True,
 ):
-    """Plot two recorded measures against runtime and iteration; return the figure.
+    """Draw runtime/iteration panels for recorded or prepared histories.
 
-    ``histories`` is a list of history dictionaries. Each needs ``time`` and
-    the keys named by ``which_measure_1`` (left panel) and ``which_measure_2``
-    (right panel). Labels and style lists must follow the same method order.
-    The left measure must align with the recorded times. Iteration indices
-    start at zero, which represents the initial point in the MF histories.
+    Each history supplies ``time`` and the two named measures; style lists
+    follow ``labels``. The runtime measure aligns with time. The iteration
+    measure may have a different length and uses indices starting at zero.
+    This lets arithmetic means use their own runtime and iteration grids.
 
-    ``f_star`` is subtracted from both measures. If omitted, use the smallest
-    recorded objective across the supplied histories, not a certified global
-    optimum. Pass zero for gradient norms or penalties. ``n_iters`` optionally
-    caps the number of recorded entries per method, including the initial one.
-    ``threshold`` trims objective/gradient curves after their first threshold hit.
-    Penalty curves retain every entry: zero penalty can be followed by positive
-    values. Their y-axis is linear up to ``threshold`` and logarithmic above it,
-    so exact zeros stay visible. A nonpositive/None threshold uses 1e-10 for this
-    linear region. None disables trimming of other measures.
+    Subtract f_star (default: best supplied objective) from both measures.
+    threshold trims objective/gradient curves at their first hit; None disables
+    trimming. n_iters optionally caps entries per method. Penalties keep zeros
+    and later rebounds, using a linear region below threshold (fallback 1e-10).
+    zero_scale explicitly sets that linear region for both panels, including
+    gradient/objective plots. Above it the scale is logarithmic.
 
-    ``max_iter`` limits only the iteration axis, so longer runtime curves
-    remain visible. ``n``, ``m``, ``mu_str``, and ``filename`` are unused legacy
-    arguments. Saving, showing, and closing the returned figure is up to the
-    caller; this helper does not create a file.
+    max_time/max_iter only zoom. runtime_steps uses the latest-observation
+    convention; mark_endpoints adds open circles. sharey links y limits.
+    note adds a caption; verbose prints terminal plotted values. n, m, mu_str
+    and filename are unused legacy arguments. Return a figure without saving it.
     """
     if f_star is None:
-        f_best = min(histories[0]["func"])
-        for i in range(1, len(histories)):
-            f_best = min(f_best, min(histories[i]["func"]))
-    else:
-        f_best = f_star
+        f_star = min(np.min(h["func"]) for h in histories)
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4), sharey=sharey)
+    measures = (which_measure_1, which_measure_2)
+    penalty_scale = threshold if threshold is not None and threshold > 0 else 1e-10
+    scales = [zero_scale if zero_scale is not None else
+              penalty_scale if measure == "penalty" else None for measure in measures]
+    for ax, scale in zip(axes, scales):
+        if scale is None:
+            ax.set_yscale("log")
+        else:
+            ax.set_yscale("symlog", linthresh=scale)
 
-    fig, (ax1, ax2) = plt.subplots(
-        1, 2, figsize=(12, 4)
-    )  # Leave space between the panels for the legend.
+    for i, history in enumerate(histories):
+        values = [np.asarray(history[measure]) - f_star for measure in measures]
+        if verbose:
+            print(f"Last {ylabel} of {labels[i]}: {values[1][-1]}")
+        for panel, (ax, measure, y) in enumerate(zip(axes, measures, values)):
+            end = len(y) if n_iters is None else min(len(y), n_iters[i])
+            if measure != "penalty" and threshold is not None:
+                hits = np.flatnonzero(y <= threshold)
+                if hits.size:
+                    end = min(end, int(hits[0]) + 1)
+            x = np.asarray(history["time"])[:end] if panel == 0 else np.arange(end)
+            y = y[:end]
+            ax.plot(x, y, label=labels[i], color=colors[i],
+                    linestyle=linestyles[i], linewidth=linewidths[i],
+                    drawstyle="steps-post" if panel == 0 and runtime_steps else "default",
+                    marker="o" if end == 1 and (measure == "penalty" or runtime_steps) else None)
+            if mark_endpoints and end:
+                ax.plot(x[-1], y[-1], "o", color=colors[i], markerfacecolor="white",
+                        markersize=4, label="_nolegend_")
+
+    for ax, measure, scale, limit in zip(axes, measures, scales, (max_time, max_iter)):
+        if scale is not None:
+            lines = [line for panel in (axes if sharey else [ax]) for line in panel.lines]
+            if (measure == "penalty" and zero_scale is None
+                    or any(np.any(line.get_ydata() == 0) for line in lines)):
+                ax.set_ylim(bottom=-0.1 * scale)
+            if not any(np.any(line.get_ydata() > 0) for line in lines):
+                ax.set_ylim(top=scale)
+        if limit is not None:
+            ax.set_xlim(0, limit)
+        ax.grid(True)
+    axes[0].set_xlabel(xlabel, fontsize=14)
+    axes[0].set_ylabel(ylabel, fontsize=14)
+    axes[1].set_xlabel("Iteration", fontsize=14)
+    axes[1].tick_params(labelleft=True)
+    axes[0].legend(fontsize=12, bbox_to_anchor=(1.05, 1), loc="upper left")
     if suptitle:
         fig.suptitle(suptitle, fontsize=16)
+    bottom = 0
+    if note:
+        fig.text(0.5, 0.015, note, ha="center", fontsize=8)
+        bottom = 0.025 + 0.045 * len(note.splitlines())
+    fig.tight_layout(rect=(0, bottom, 1, 1))
+    return fig
 
-    penalty_scale = threshold if threshold is not None and threshold > 0 else 1e-10
-    for ax, measure in ((ax1, which_measure_1), (ax2, which_measure_2)):
-        if measure == "penalty":
-            ax.set_yscale("symlog", linthresh=penalty_scale)
+
+def mean_gradient_histories(seed_histories, methods):
+    """Average gradient norms at common iteration and runtime budgets.
+
+    Input: seed -> method -> history, with equally sized 1-D ``grad_norm``
+    and cumulative ``time`` arrays. Times must be finite and nondecreasing.
+    Every seed has equal weight, including unsuccessful runs. Each terminal
+    norm is retained after its recorded end; earlier target hits do not stop
+    the trace. No threshold replacement, interpolation or log averaging.
+
+    Runtime uses the last observation at each timestamp (last duplicate wins).
+    Its grid starts once every run has an observation and ends at the latest
+    recorded time across methods. Iterations also extend to the longest run.
+    Return {axis: {grid: 1-D array, means: {method: 1-D array}}}.
+    """
+    runs = {name: [histories[name] for histories in seed_histories.values()]
+            for name in methods}
+    all_runs = [h for histories in runs.values() for h in histories]
+    if any(not np.all(np.isfinite(h["grad_norm"])) for h in all_runs):
+        raise ValueError("Mean requires finite gradient histories; inspect failed runs.")
+    iteration_grid = np.arange(max(len(h["grad_norm"]) for h in all_runs))
+    first_time = max(h["time"][0] for h in all_runs)
+    time_grid = np.unique(np.concatenate([h["time"] for h in all_runs]))
+    time_grid = time_grid[time_grid >= first_time]
+
+    summaries = {}
+    for axis, grid in [("runtime", time_grid), ("iteration", iteration_grid)]:
+        means = {}
+        for name, histories in runs.items():
+            values = []
+            for h in histories:
+                gradient = np.asarray(h["grad_norm"], dtype=float)
+                index = (np.searchsorted(h["time"], grid, side="right") - 1
+                         if axis == "runtime" else grid)
+                values.append(gradient[np.minimum(index, len(gradient) - 1)])
+            means[name] = np.mean(values, axis=0)
+        summaries[axis] = dict(grid=grid, means=means)
+    return summaries
+
+
+def plot_mean_gradient_histories(seed_histories, method_colors, *,
+                                 max_iter=None, max_time=None, zero_scale=1e-14,
+                                 method_linestyles=None, target=None, flat_tail_rtol=None):
+    """Plot all-seed arithmetic means, returning (figure, numeric summaries).
+
+    Optional limits zoom the view without changing the computed means.
+    The y axis is logarithmic above zero_scale and linear near zero so exact
+    zeros remain visible. This is a mean of norms, not a norm of mean gradients.
+    method_linestyles optionally maps method names to solid/dashed line styles.
+    Each curve ends at the first shared-grid point where every seed's current
+    norm is <= target, or at that method's last recording if the target is
+    missed/None. The full means are retained in summaries; endpoints record
+    the displayed cutoff and whether all seeds met the target there.
+    If flat_tail_rtol is set and the target is missed/None, omit the terminal
+    plateau once every seed stays within this relative tolerance of its own
+    final norm. No absolute tolerance is used. This display cutoff does not
+    imply convergence and never removes an earlier, temporary plateau.
+    """
+    summaries = mean_gradient_histories(seed_histories, method_colors)
+    method_linestyles = method_linestyles or {}
+    plot_histories = {name: {} for name in method_colors}
+    limits = {}
+    for axis, limit in zip(("runtime", "iteration"), (max_time, max_iter)):
+        summary = summaries[axis]
+        grid = summary["grid"]
+        summary["endpoints"] = {}
+        for name in method_colors:
+            histories = [methods[name] for methods in seed_histories.values()]
+            last_record = max(h["time"][-1] if axis == "runtime" else len(h["grad_norm"]) - 1
+                              for h in histories)
+            end = max(0, int(np.searchsorted(grid, last_record, side="right")) - 1)
+            reached = None
+            if target is not None:
+                below = []
+                for h in histories:
+                    index = (np.searchsorted(h["time"], grid[:end + 1], side="right") - 1
+                             if axis == "runtime" else grid[:end + 1])
+                    values = np.asarray(h["grad_norm"])[np.minimum(index, len(h["grad_norm"]) - 1)]
+                    below.append(values <= target)
+                hits = np.flatnonzero(np.all(below, axis=0))
+                reached = bool(hits.size)
+                if reached:
+                    end = int(hits[0])
+            flat_tail_trimmed = False
+            cutoff = last_record
+            if flat_tail_rtol is not None and not reached:
+                plateau_starts = []
+                for h in histories:
+                    gradient = np.asarray(h["grad_norm"])
+                    changed = np.flatnonzero(~np.isclose(
+                        gradient, gradient[-1], rtol=flat_tail_rtol, atol=0))
+                    start = int(changed[-1]) + 1 if changed.size else 0
+                    plateau_starts.append(h["time"][start] if axis == "runtime" else start)
+                cutoff = max(plateau_starts)
+                plateau_end = max(0, int(np.searchsorted(grid, cutoff, side="right")) - 1)
+                flat_tail_trimmed = cutoff < last_record
+                end = min(end, plateau_end)
+            x = grid[:end + 1].copy()
+            # A run ending before other methods initialize still has a real endpoint.
+            if cutoff < x[0]:
+                x[0] = cutoff
+            summary["endpoints"][name] = dict(index=end, x=float(x[-1]),
+                                             all_seeds_reached=reached,
+                                             flat_tail_trimmed=bool(flat_tail_trimmed))
+            plot_histories[name][axis] = summary["means"][name][:end + 1]
+            if axis == "runtime":
+                plot_histories[name]["time"] = x
+        last_shown = max(endpoint["x"] for endpoint in summary["endpoints"].values())
+        limits[axis] = limit if limit is not None else max(last_shown, 1e-12)
+    note = f"All {len(seed_histories)} seeds retained after exits, including failures. "
+    note += (f"Cutoff: all seeds <= {target:g}, otherwise last recording."
+             if target is not None else "Cutoff: each method's last recording.")
+    if flat_tail_rtol is not None:
+        note += (f"\nTerminal plateaus omitted ({100 * flat_tail_rtol:g}% relative tolerance "
+                 "per seed; display only).")
+    if any(style == "--" for style in method_linestyles.values()):
+        note += " Dashed: Gauss-Newton."
+    note += f"\nLinear below {zero_scale:g}, log above. Parallel runtimes include shared CPU load."
+    fig = plot_figures(
+        list(plot_histories.values()), list(method_colors), n=None, m=None, mu_str=None,
+        colors=list(method_colors.values()), linewidths=[2] * len(method_colors),
+        linestyles=[method_linestyles.get(name, "-") for name in method_colors],
+        which_measure_1="runtime", which_measure_2="iteration", f_star=0,
+        threshold=None, max_time=limits["runtime"], max_iter=limits["iteration"],
+        zero_scale=zero_scale, sharey=True, runtime_steps=True, verbose=False,
+        ylabel="Mean gradient norm", suptitle="Matrix Factorization: arithmetic mean",
+        note=note,
+    )
+    return fig, summaries
+
+
+def plot_combined_gradient_histories(seed_histories, method_colors, *,
+                                     axis="iteration", max_x=None, ylim=None):
+    """Overlay per-seed norms, medians and quartiles for selected MF methods.
+
+    seed_histories maps each seed to method histories. ``grad_norm`` and
+    ``time`` are equal-length 1-D arrays, starting with the initial point;
+    times are cumulative seconds, finite, nonnegative and nondecreasing.
+    method_colors maps selected method names to Matplotlib colors.
+    axis is 'iteration' or 'runtime'; max_x is an optional inclusive display
+    bound in those units. All-seed summaries use common recorded support.
+    Runtime uses the latest observation at each common timestamp, including
+    the last observation at duplicate times, with no endpoint extrapolation.
+    Return a new figure; leave all input histories and earlier plots intact.
+    """
+    if axis not in ("iteration", "runtime"):
+        raise ValueError("axis must be 'iteration' or 'runtime'.")
+    if not seed_histories or not method_colors:
+        raise ValueError("Select at least one method and collect seed histories first.")
+    if max_x is not None and (not np.isfinite(max_x) or max_x < 0):
+        raise ValueError("max_x must be finite and nonnegative, or None.")
+
+    runs_by_method = {}
+    for method in method_colors:
+        runs = []
+        for seed, histories_for_seed in seed_histories.items():
+            history = histories_for_seed[method]
+            g = np.asarray(history["grad_norm"], dtype=float)
+            t = np.asarray(history["time"], dtype=float)
+            if (g.ndim != 1 or g.size == 0 or t.shape != g.shape
+                    or not np.all(np.isfinite(g)) or np.any(g < 0)
+                    or not np.all(np.isfinite(t)) or np.any(t < 0)
+                    or np.any(np.diff(t) < 0)):
+                raise ValueError(f"Invalid gradient/time history for {method}, seed {seed}.")
+            runs.append((np.arange(g.size) if axis == "iteration" else t, g))
+        runs_by_method[method] = runs
+
+    def positive(values):
+        return np.where(values > 0, values, np.nan)
+
+    fig, ax = plt.subplots(figsize=(9, 5), layout="constrained")
+    zero_present = False
+    no_overlap = []
+    for method, color in method_colors.items():
+        runs = runs_by_method[method]
+        for x, g in runs:
+            ax.plot(x, positive(g), color=color, alpha=0.18, linewidth=0.8,
+                    drawstyle="steps-post" if axis == "runtime" else "default",
+                    marker="." if len(g) == 1 else None, label="_nolegend_")
+            zero_present |= bool(np.any(g == 0))
+
+        start = max(x[0] for x, _ in runs)
+        end = min(x[-1] for x, _ in runs)
+        if max_x is not None:
+            end = min(end, max_x)
+        if start > end:
+            no_overlap.append(method)
+            ax.plot([], [], color=color, linewidth=2.3, label=f"{method} (traces only)")
+            continue
+
+        if axis == "iteration":
+            grid = np.arange(int(end) + 1)
+            values = np.stack([g[:len(grid)] for _, g in runs])
         else:
-            ax.set_yscale("log")
+            # Every change inside common support appears in the step summary.
+            grid = np.unique(np.concatenate(
+                [x[(x >= start) & (x <= end)] for x, _ in runs]
+                + [np.array([start, end])]
+            ))
+            values = np.stack([
+                g[np.searchsorted(x, grid, side="right") - 1] for x, g in runs
+            ])
+        lower, median, upper = np.percentile(values, [25, 50, 75], axis=0)
+        ax.fill_between(grid, positive(lower), positive(upper), color=color,
+                        alpha=0.16, step="post" if axis == "runtime" else None)
+        ax.plot(grid, positive(median), color=color, linewidth=2.4, label=method,
+                drawstyle="steps-post" if axis == "runtime" else "default")
+        if median[-1] > 0:
+            ax.plot(grid[-1], median[-1], marker="o", markersize=5,
+                    markerfacecolor="white", markeredgecolor=color,
+                    linestyle="none", label="_nolegend_")
 
-    def first_hit_index(resid, measure):
-        if measure == "penalty" or threshold is None:
-            return len(resid)
-        hits = np.flatnonzero(resid <= threshold)
-        return hits[0] + 1 if hits.size else len(resid)
-
-    for i in range(len(histories)):
-        resid = np.array(histories[i][which_measure_1]) - f_best
-        resid_2 = np.array(histories[i][which_measure_2]) - f_best
-
-        print(f"Last {ylabel} of {labels[i]}: {resid_2[-1]}")
-
-        # Apply the optional entry cap and threshold separately to both panels.
-        n_iter = n_iters[i] if n_iters is not None else resid.shape[0]
-        n_iter = min(n_iter, first_hit_index(resid, which_measure_1))
-        n_iter_2 = (
-            n_iters[i] if n_iters is not None else resid_2.shape[0]
-        )
-        n_iter_2 = min(
-            n_iter_2, first_hit_index(resid_2, which_measure_2)
-        )
-
-        ax1.plot(
-            histories[i]["time"][0:n_iter],
-            resid[0:n_iter],
-            label=labels[i],
-            linestyle=linestyles[i],
-            color=colors[i],
-            linewidth=linewidths[i],
-            marker="o" if which_measure_1 == "penalty" and n_iter == 1 else None,
-        )
-        ax2.plot(
-            range(n_iter_2),
-            resid_2[0:n_iter_2],
-            label=labels[i],
-            linestyle=linestyles[i],
-            color=colors[i],
-            linewidth=linewidths[i],
-            marker="o" if which_measure_2 == "penalty" and n_iter_2 == 1 else None,
-        )
-
-    for ax, measure in ((ax1, which_measure_1), (ax2, which_measure_2)):
-        if measure == "penalty":
-            # Leave room below zero so a zero curve does not hide behind the axis.
-            ax.set_ylim(bottom=-0.1 * penalty_scale)
-            if not any(np.any(line.get_ydata() > 0) for line in ax.lines):
-                ax.set_ylim(top=penalty_scale)
-
-    ax1.set_xlabel(xlabel, fontsize=14)
-    ax1.set_ylabel(ylabel, fontsize=14)
-    ax2.set_xlabel("Iteration", fontsize=14)
-    if max_iter is not None:
-        ax2.set_xlim(0, max_iter)
-    ax1.legend(
-        fontsize=12, bbox_to_anchor=(1.05, 1), loc="upper left"
-    )  # Place the legend outside the data axes.
-    ax1.grid()
-    ax2.grid()
-    plt.tight_layout()  # Fit axis labels and the external legend.
+    longest = max(x[-1] for runs in runs_by_method.values() for x, _ in runs)
+    right = longest if max_x is None else max_x
+    ax.set_xlim(0, right if right > 0 else 1)
+    ax.set_yscale("log")
+    if ylim is not None:
+        ax.set_ylim(ylim)
+    ax.set_xlabel("Iteration" if axis == "iteration" else "Runtime (s)")
+    ax.set_ylabel("Gradient norm")
+    title = f"Matrix factorization: {len(seed_histories)} seeds, gradient vs {axis}"
+    runtime_zoomed = axis == "runtime" and max_x is not None and max_x < longest
+    if runtime_zoomed:
+        title += f" (first {max_x:g} s)"
+    fig.suptitle(title)
+    ax.set_title("Thick: median | Shaded: 25th-75th percentile | Faint: individual seeds",
+                 fontsize=10)
+    ax.legend(fontsize=10)
+    ax.grid(True, which="major", alpha=0.2)
+    note = "Open circles: end of each displayed all-seed summary."
+    if runtime_zoomed:
+        note += f"\nFull recorded runtime: {longest:,.1f} s; later observations are outside this view."
+    if no_overlap:
+        note += " No common recorded interval: " + ", ".join(no_overlap) + "."
+    if zero_present:
+        note += " Exact zeros omitted on the log axis."
+    fig.supxlabel(note, fontsize=9)
     return fig
