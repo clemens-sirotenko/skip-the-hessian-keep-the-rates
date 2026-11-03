@@ -1,4 +1,4 @@
-"""Plots and all-seed gradient means for the MF notebooks.
+"""Plots and all-seed arithmetic means for the MF notebooks.
 
 Histories contain func, grad_norm, penalty and time. Plot thresholds affect
 display only; penalty panels retain zeros and later rebounds.
@@ -95,13 +95,13 @@ def plot_figures(
     return fig
 
 
-def mean_gradient_histories(seed_histories, methods):
-    """Average gradient norms at common iteration and runtime budgets.
+def mean_histories(seed_histories, methods, *, measure="grad_norm"):
+    """Average a recorded measure at common iteration and runtime budgets.
 
-    Input: seed -> method -> history, with equally sized 1-D ``grad_norm``
+    Input: seed -> method -> history, with equally sized 1-D measure
     and cumulative ``time`` arrays. Times must be finite and nondecreasing.
     Every seed has equal weight, including unsuccessful runs. Each terminal
-    norm is retained after its recorded end; earlier target hits do not stop
+    value is retained after its recorded end; earlier target hits do not stop
     the trace. No threshold replacement, interpolation or log averaging.
 
     Runtime uses the last observation at each timestamp (last duplicate wins).
@@ -112,9 +112,9 @@ def mean_gradient_histories(seed_histories, methods):
     runs = {name: [histories[name] for histories in seed_histories.values()]
             for name in methods}
     all_runs = [h for histories in runs.values() for h in histories]
-    if any(not np.all(np.isfinite(h["grad_norm"])) for h in all_runs):
-        raise ValueError("Mean requires finite gradient histories; inspect failed runs.")
-    iteration_grid = np.arange(max(len(h["grad_norm"]) for h in all_runs))
+    if any(not np.all(np.isfinite(h[measure])) for h in all_runs):
+        raise ValueError(f"Mean requires finite {measure} histories; inspect failed runs.")
+    iteration_grid = np.arange(max(len(h[measure]) for h in all_runs))
     first_time = max(h["time"][0] for h in all_runs)
     time_grid = np.unique(np.concatenate([h["time"] for h in all_runs]))
     time_grid = time_grid[time_grid >= first_time]
@@ -125,13 +125,83 @@ def mean_gradient_histories(seed_histories, methods):
         for name, histories in runs.items():
             values = []
             for h in histories:
-                gradient = np.asarray(h["grad_norm"], dtype=float)
+                recorded = np.asarray(h[measure], dtype=float)
                 index = (np.searchsorted(h["time"], grid, side="right") - 1
                          if axis == "runtime" else grid)
-                values.append(gradient[np.minimum(index, len(gradient) - 1)])
+                values.append(recorded[np.minimum(index, len(recorded) - 1)])
             means[name] = np.mean(values, axis=0)
         summaries[axis] = dict(grid=grid, means=means)
     return summaries
+
+
+def prepare_mean_histories(seed_histories, methods, *, measure="grad_norm",
+                           target=None, flat_tail_rtol=None):
+    """Return prepared plot histories and full means with display endpoints.
+
+    Each method's plot history has time, runtime values and iteration values;
+    the two value arrays may have different lengths. Full grids and means stay
+    in summaries. Every seed has equal weight, with terminal values retained.
+
+    End display at the first all-seed target hit, otherwise the last recording.
+    If the target is missed/None, flat_tail_rtol optionally omits a terminal
+    plateau once every seed stays within that relative tolerance of its final
+    value (zero absolute tolerance). These cutoffs apply to the selected measure;
+    leave both None to retain every recording, including zero penalty rebounds.
+    This is not a solver convergence test.
+    """
+    summaries = mean_histories(seed_histories, methods, measure=measure)
+    plot_histories = {name: {} for name in methods}
+    for axis in ("runtime", "iteration"):
+        summary = summaries[axis]
+        grid = summary["grid"]
+        summary["endpoints"] = {}
+        for name in methods:
+            histories = [seed_runs[name] for seed_runs in seed_histories.values()]
+            last_record = max(h["time"][-1] if axis == "runtime" else len(h[measure]) - 1
+                              for h in histories)
+            end = max(0, int(np.searchsorted(grid, last_record, side="right")) - 1)
+            reached = None
+            if target is not None:
+                below = []
+                for h in histories:
+                    index = (np.searchsorted(h["time"], grid[:end + 1], side="right") - 1
+                             if axis == "runtime" else grid[:end + 1])
+                    values = np.asarray(h[measure])[np.minimum(index, len(h[measure]) - 1)]
+                    below.append(values <= target)
+                hits = np.flatnonzero(np.all(below, axis=0))
+                reached = bool(hits.size)
+                if reached:
+                    end = int(hits[0])
+            flat_tail_trimmed = False
+            cutoff = last_record
+            if flat_tail_rtol is not None and not reached:
+                plateau_starts = []
+                for h in histories:
+                    recorded = np.asarray(h[measure])
+                    changed = np.flatnonzero(~np.isclose(
+                        recorded, recorded[-1], rtol=flat_tail_rtol, atol=0))
+                    start = int(changed[-1]) + 1 if changed.size else 0
+                    plateau_starts.append(h["time"][start] if axis == "runtime" else start)
+                cutoff = max(plateau_starts)
+                plateau_end = max(0, int(np.searchsorted(grid, cutoff, side="right")) - 1)
+                flat_tail_trimmed = cutoff < last_record
+                end = min(end, plateau_end)
+            x = grid[:end + 1].copy()
+            # A run ending before other methods initialize still has a real endpoint.
+            if cutoff < x[0]:
+                x[0] = cutoff
+            summary["endpoints"][name] = dict(index=end, x=float(x[-1]),
+                                             all_seeds_reached=reached,
+                                             flat_tail_trimmed=bool(flat_tail_trimmed))
+            plot_histories[name][axis] = summary["means"][name][:end + 1]
+            if axis == "runtime":
+                plot_histories[name]["time"] = x
+    return plot_histories, summaries
+
+
+# Names used by the older gradient-only notebooks.
+mean_gradient_histories = mean_histories
+prepare_mean_gradient_histories = prepare_mean_histories
 
 
 def plot_mean_gradient_histories(seed_histories, method_colors, *,
@@ -153,56 +223,12 @@ def plot_mean_gradient_histories(seed_histories, method_colors, *,
     final norm. No absolute tolerance is used. This display cutoff does not
     imply convergence and never removes an earlier, temporary plateau.
     """
-    summaries = mean_gradient_histories(seed_histories, method_colors)
+    plot_histories, summaries = prepare_mean_gradient_histories(
+        seed_histories, method_colors, target=target, flat_tail_rtol=flat_tail_rtol)
     method_linestyles = method_linestyles or {}
-    plot_histories = {name: {} for name in method_colors}
     limits = {}
     for axis, limit in zip(("runtime", "iteration"), (max_time, max_iter)):
-        summary = summaries[axis]
-        grid = summary["grid"]
-        summary["endpoints"] = {}
-        for name in method_colors:
-            histories = [methods[name] for methods in seed_histories.values()]
-            last_record = max(h["time"][-1] if axis == "runtime" else len(h["grad_norm"]) - 1
-                              for h in histories)
-            end = max(0, int(np.searchsorted(grid, last_record, side="right")) - 1)
-            reached = None
-            if target is not None:
-                below = []
-                for h in histories:
-                    index = (np.searchsorted(h["time"], grid[:end + 1], side="right") - 1
-                             if axis == "runtime" else grid[:end + 1])
-                    values = np.asarray(h["grad_norm"])[np.minimum(index, len(h["grad_norm"]) - 1)]
-                    below.append(values <= target)
-                hits = np.flatnonzero(np.all(below, axis=0))
-                reached = bool(hits.size)
-                if reached:
-                    end = int(hits[0])
-            flat_tail_trimmed = False
-            cutoff = last_record
-            if flat_tail_rtol is not None and not reached:
-                plateau_starts = []
-                for h in histories:
-                    gradient = np.asarray(h["grad_norm"])
-                    changed = np.flatnonzero(~np.isclose(
-                        gradient, gradient[-1], rtol=flat_tail_rtol, atol=0))
-                    start = int(changed[-1]) + 1 if changed.size else 0
-                    plateau_starts.append(h["time"][start] if axis == "runtime" else start)
-                cutoff = max(plateau_starts)
-                plateau_end = max(0, int(np.searchsorted(grid, cutoff, side="right")) - 1)
-                flat_tail_trimmed = cutoff < last_record
-                end = min(end, plateau_end)
-            x = grid[:end + 1].copy()
-            # A run ending before other methods initialize still has a real endpoint.
-            if cutoff < x[0]:
-                x[0] = cutoff
-            summary["endpoints"][name] = dict(index=end, x=float(x[-1]),
-                                             all_seeds_reached=reached,
-                                             flat_tail_trimmed=bool(flat_tail_trimmed))
-            plot_histories[name][axis] = summary["means"][name][:end + 1]
-            if axis == "runtime":
-                plot_histories[name]["time"] = x
-        last_shown = max(endpoint["x"] for endpoint in summary["endpoints"].values())
+        last_shown = max(endpoint["x"] for endpoint in summaries[axis]["endpoints"].values())
         limits[axis] = limit if limit is not None else max(last_shown, 1e-12)
     note = f"All {len(seed_histories)} seeds retained after exits, including failures. "
     note += (f"Cutoff: all seeds <= {target:g}, otherwise last recording."
