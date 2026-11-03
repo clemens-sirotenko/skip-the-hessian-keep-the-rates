@@ -30,3 +30,6 @@ __pycache__/
 /MF/experiment_matrix_factorization_multiple_cubic_new_parallel.ipynb
 /MF/experiment_matrix_factorization_multiple_cubic_new.ipynb
 /MF/experiment_matrix_factorization_multiple_new.ipynb
+
+# Separate exports from the corrected NN experiment
+/NN/corrected_results/
