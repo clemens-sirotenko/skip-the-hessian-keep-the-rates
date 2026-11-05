@@ -15,7 +15,7 @@ def plot_figures(
     max_iter=1000, which_measure_1="func", which_measure_2="func_at_lssolve",
     ylabel="Func. residual", xlabel="Runtime (s)", *, max_time=None,
     zero_scale=None, sharey=False, runtime_steps=False, mark_endpoints=False,
-    note=None, verbose=True,
+    note=None, verbose=True, legend_layout="outside", marker_cycle=None, markevery=None,
 ):
     """Draw runtime/iteration panels for recorded or prepared histories.
 
@@ -35,10 +35,18 @@ def plot_figures(
     convention; mark_endpoints adds open circles. sharey links y limits.
     note adds a caption; verbose prints terminal plotted values. n, m, mu_str
     and filename are unused legacy arguments. Return a figure without saving it.
+    legend_layout="paper" follows utils.plot_for_paper_2: a boxed, translucent
+    three-column legend overlapping the panels, dashed grid and 10x4 figure.
+    "outside" preserves the original legend between the panels. marker_cycle
+    optionally supplies one marker per method; markevery controls marker spacing
+    without thinning the plotted data (a float uses display-distance spacing).
     """
+    if legend_layout not in ("outside", "paper"):
+        raise ValueError("legend_layout must be 'outside' or 'paper'.")
     if f_star is None:
         f_star = min(np.min(h["func"]) for h in histories)
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4), sharey=sharey)
+    paper_style = legend_layout == "paper"
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4) if paper_style else (12, 4), sharey=sharey)
     measures = (which_measure_1, which_measure_2)
     penalty_scale = threshold if threshold is not None and threshold > 0 else 1e-10
     scales = [zero_scale if zero_scale is not None else
@@ -61,10 +69,12 @@ def plot_figures(
                     end = min(end, int(hits[0]) + 1)
             x = np.asarray(history["time"])[:end] if panel == 0 else np.arange(end)
             y = y[:end]
+            marker = (marker_cycle[i] if marker_cycle is not None else
+                      "o" if end == 1 and (measure == "penalty" or runtime_steps) else None)
             ax.plot(x, y, label=labels[i], color=colors[i],
                     linestyle=linestyles[i], linewidth=linewidths[i],
                     drawstyle="steps-post" if panel == 0 and runtime_steps else "default",
-                    marker="o" if end == 1 and (measure == "penalty" or runtime_steps) else None)
+                    marker=marker, markevery=markevery, markersize=5 if paper_style else 6)
             if mark_endpoints and end:
                 ax.plot(x[-1], y[-1], "o", color=colors[i], markerfacecolor="white",
                         markersize=4, label="_nolegend_")
@@ -79,19 +89,83 @@ def plot_figures(
                 ax.set_ylim(top=scale)
         if limit is not None:
             ax.set_xlim(0, limit)
-        ax.grid(True)
-    axes[0].set_xlabel(xlabel, fontsize=14)
-    axes[0].set_ylabel(ylabel, fontsize=14)
-    axes[1].set_xlabel("Iteration", fontsize=14)
+        if paper_style:
+            ax.grid(True, which="both", linestyle="--", linewidth=0.5)
+        else:
+            ax.grid(True)
+    label_fontsize = 10 if paper_style else 14
+    axes[0].set_xlabel(xlabel, fontsize=label_fontsize)
+    axes[0].set_ylabel(ylabel, fontsize=label_fontsize)
+    axes[1].set_xlabel("Iteration", fontsize=label_fontsize)
+    if paper_style:
+        axes[1].set_ylabel(ylabel, fontsize=label_fontsize)
     axes[1].tick_params(labelleft=True)
-    axes[0].legend(fontsize=12, bbox_to_anchor=(1.05, 1), loc="upper left")
+    if legend_layout == "outside":
+        axes[0].legend(fontsize=12, bbox_to_anchor=(1.05, 1), loc="upper left")
     if suptitle:
         fig.suptitle(suptitle, fontsize=16)
     bottom = 0
     if note:
         fig.text(0.5, 0.015, note, ha="center", fontsize=8)
         bottom = 0.025 + 0.045 * len(note.splitlines())
-    fig.tight_layout(rect=(0, bottom, 1, 1))
+    if paper_style:
+        handles, legend_labels = axes[0].get_legend_handles_labels()
+        fig.legend(
+            handles, legend_labels, loc="upper center",
+            ncol=3, frameon=True, framealpha=0.8, fancybox=True,
+            facecolor="white", edgecolor="0.8", fontsize=10,
+        )
+    fig.tight_layout(rect=(0, bottom, 1, 0.95 if paper_style else 1))
+    return fig
+
+
+def plot_penalty_iterations(
+    histories, labels, colors, linewidths, linestyles, *, max_iter=None,
+    ylim=None, zero_scale=1e-10, figsize=(6, 4), legend_loc="upper right",
+    marker_cycle=None, markevery=None,
+):
+    """Plot recorded weighted penalties against update count on one panel.
+
+    Each history supplies a 1-D ``penalty`` array including the initial point.
+    Style lists follow labels. All recorded entries are retained, including
+    zeros and later rebounds; no threshold cutoff or terminal extension is used.
+    The axis is logarithmic above positive zero_scale and linear near zero.
+    max_iter and ylim only zoom; None uses automatic limits. The boxed legend
+    and grid follow the NMF Figure 3 / Figure 8 single-panel paper plots.
+    Return the figure without saving or displaying it.
+    """
+    if not histories:
+        raise ValueError("Select at least one penalty history.")
+    if not np.isscalar(zero_scale) or not np.isfinite(zero_scale) or zero_scale <= 0:
+        raise ValueError("zero_scale must be a positive finite number.")
+    if max_iter is not None and (not np.isfinite(max_iter) or max_iter <= 0):
+        raise ValueError("max_iter must be a positive number or None.")
+    fig, ax = plt.subplots(figsize=figsize)
+    ax.set_yscale("symlog", linthresh=zero_scale)
+    has_zero, has_positive = False, False
+    for i, history in enumerate(histories):
+        penalty = np.asarray(history["penalty"])
+        has_zero |= bool(np.any(penalty == 0))
+        has_positive |= bool(np.any(penalty > 0))
+        ax.plot(
+            np.arange(len(penalty)), penalty, label=labels[i],
+            color=colors[i], linewidth=linewidths[i], linestyle=linestyles[i],
+            marker=marker_cycle[i] if marker_cycle is not None else None,
+            markevery=markevery, markersize=4,
+        )
+    ax.set_xlim(left=0, right=max_iter)
+    if has_zero:
+        ax.set_ylim(bottom=-0.1 * zero_scale)
+    if not has_positive:
+        ax.set_ylim(top=zero_scale)
+    if ylim is not None:
+        ax.set_ylim(*ylim)
+    ax.set_xlabel("Iteration", fontsize=10)
+    ax.set_ylabel("Penalty", fontsize=10)
+    ax.grid(True, which="both", linestyle="--", linewidth=0.5)
+    ax.legend(loc=legend_loc, fontsize=8, frameon=True, framealpha=0.8,
+              fancybox=True, facecolor="white", edgecolor="0.8")
+    fig.tight_layout()
     return fig
 
 
