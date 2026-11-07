@@ -1,0 +1,48 @@
+Skip the Hessian, Keep the Rates: Globalized
+Semismooth Newton with Lazy Hessian Updates
+Amal Alphonse
+Faculty of Mathematics
+University of Duisburg-Essen
+Thea-Leymann-Straße 9
+45127 Essen, Germany
+amal.alphonse@uni-due.de
+Pavel Dvurechensky
+Weierstrass Institute
+Anton-Wilhelm-Amo-Straße 39
+10117 Berlin, Germany
+pavel.dvurechensky@wias-berlin.de
+Clemens Sirotenko
+Weierstrass Institute
+Anton-Wilhelm-Amo-Straße 39
+10117 Berlin, Germany
+clemens.sirotenko@wias-berlin.de
+Abstract
+Second-order methods are provably faster than first-order methods, and their
+efficient implementations for large-scale optimization problems have attracted
+significant attention. Yet, optimization problems in ML often have nonsmooth
+derivatives, which makes the existing convergence rate theory of second-order
+methods inapplicable. In this paper, we propose a new semismooth Newton
+method (SSN) that enjoys both global convergence rates and asymptotic superlinear
+convergence without requiring second-order differentiability. Crucially, our method
+does not require (generalized) Hessians to be evaluated at each iteration but only
+periodically, and it reuses stale Hessians otherwise (i.e., it performs lazy Hessian
+updates), saving compute cost and often leading to significant speedups in time,
+whilst still maintaining strong global and local convergence rate guarantees. We
+develop our theory in an infinite-dimensional setting and illustrate it with numerical
+experiments on matrix factorization and neural networks with Lipschitz constraints.
+1 Introduction
+Recent developments in second-order optimization methods showcase their superior convergence rates
+compared to first-order methods [6, 53, 54] and propose efficient implementations that are scalable
+enough to solve large problems arising in ML [45, 31]. The efficiency of second-order methods is
+theoretically well understood for smooth problems with Lipschitz Hessians where they provably
+find second-order stationary points of non-convex functions and have fast convergence rates for
+minimizing convex functions. At the same time, optimization problems in ML often have nonsmooth
+elements, e.g., training DNNs with ReLU, Huberized ReLU, or ReLU 2 nonlinearities, (kernel)
+support vector machines [37, 77], kernel-based optimal transport problems [42], partial correlation
+network estimation [40], learning problems with LASSO and other nonsmooth (group) sparsity-
+inducing penalizations [68, 46, 34], square-root regression [71]. Nonsmooth derivatives naturally
+appear in optimization with inequality constraints that are treated by penalization, e.g., in nonnegative
+PCA [34], nonnegative matrix factorization [11], nonnegative least squares, nonparametric maximum
+likelihood estimation in mixture models [79]. Moreover, several well-established losses such as Huber,
+squared hinge, or the sparsemax loss [ 47] have piecewise-defined second derivatives that exhibit
+40th Conference on Neural Information Processing Systems (NeurIPS 2026).

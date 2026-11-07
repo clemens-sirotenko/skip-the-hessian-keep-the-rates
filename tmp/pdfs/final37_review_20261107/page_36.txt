@@ -1,0 +1,40 @@
+D.1 Technical lemmas
+Our first steps are to establish several relations between points xk (the point from which we
+make a step at iteration k), xk+1 =x +(λk, xk, xπ(k)) (the point accepted at iteration k), xk,+ =
+x+(λk/4, xk) =x +(λk/4, xk, xπ(k)) (the last non-accepted point in the case of nontrivial linesearch
+at iteration k, i.e., if jk >0 ), and x∗ (the point to which xk converges by the assumption made at the
+beginning of Section 4).
+Lemma D.1.Let(x k)k∈N be the iterates of Algorithm 1. Let Assumption 2 hold and for allk≥K,
+xk ∈B R(x∗). Then, there exist constantsc 1, c2 >0such that, for allk≥K,
+∥xk+1 −x ∗∥ ≤c1∥xk+1 −x k∥and∥x k −x ∗∥ ≤c2∥xk+1 −x k∥.(63)
+We also have, for0< λ < λk andk≥K,
+∥x+(λ, xk, xπ(k))−x ∗∥ ≤(2c1 + 1)λk −(1 +c 1)λλk ∥x+(λ, xk, xπ(k))−x k∥,(64)
+∥xk −x ∗∥ ≤(2c1 + 2)λk −(1 +c 1)λλk ∥x+(λ, xk, xπ(k))−x k∥.(65)
+Note that we will mainly use the last two inequalities with λ=λ k/4, i.e., when x+(λ, xk, xπ(k)) =
+x+(λk/4, xk, xπ(k)) =x k,+.
+Proof. First, let us note that due to the fact that H(x k) is positive semidefinite only for k≥K (see
+Assumption 2 and the discussion afterwards) we have the following analogue of (8):
+λk ≤ λloc := max{4L,Λ 0gp0, λK}, k≥K.(66)
+This can be proved with a similar induction argument as for (8). Indeed, assume that (66) holds for
+iterationk−1≥Kand consider iterationk > K. Ifj k = 0, we have
+λk = Λkgpk = 4jk−1 Λk−14 gpk = λk−14gpk−1 gpk (35)≤ λk−12p4 p≤1≤ λk−12 ≤ λloc,
+where we used that 2p/4≤1/2 for any p∈[0,1] and the induction hypothesis λk−1 ≤ λloc. If
+jk >0, we have thatλ k/4≤Lsince it was not accepted. Hence,λ k ≤4L≤ λloc.
+Trivial consequences of strong convexity (which we can use since for k≥K , xk belongs to the ball
+of strong convexity) imply
+µ∥x k+1 −x ∗∥2 ≤2(F(x k+1)−F(x ∗)) = 2Fk+1 ≤g 2k+1/µ (33)≤4λ 2kr2k/µ,(67)
+whence, by (66), fork≥K,
+∥xk+1 −x ∗∥ ≤2λkµ rk = 2λkµ ∥xk −x k+1∥≤ 2λlocµ ∥xk −x k+1∥,(68)
+which is the first inequality in (63) with c1 = 2λlocµ . The second inequality in (63) follows with
+c2 = 1 + 2λlocµ via the triangle inequality.
+To show (64), applying two times the triangle inequality, one time (63) and one time Lemma B.2
+(which we can apply since H(x π(k))⪰0 for k≥K by Assumption 2), recalling from Algorithm 1
+and (4) thatx k+1 =x +(λk, xk, xπ(k)), we obtain
+∥x+(λ, xk, xπ(k))−x ∗∥ ≤ ∥x+(λ, xk, xπ(k))−x k+1∥+∥x k+1 −x ∗∥
+(63)
+≤ ∥x+(λ, xk, xπ(k))−x k+1∥+c 1∥xk+1 −x k∥
+≤ ∥x+(λ, xk, xπ(k))−x k+1∥+c 1(∥x+(λ, xk, xπ(k))−x k+1∥+∥x +(λ, xk, xπ(k))−x k∥)
+= (1 +c 1)∥x+(λ, xk, xπ(k))−x k+1∥+c 1∥x+(λ, xk, xπ(k))−x k∥)
+(36)
+≤(1 +c 1) λk −λλk ∥x+(λ, xk, xπ(k))−x k∥+c 1∥x+(λ, xk, xπ(k))−x k∥,
+36

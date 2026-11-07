@@ -1,0 +1,56 @@
+A Discussions
+A.1 Newton differentiability and semismoothness
+For a function f∈C 1(domf, R), we say that f ′ isNewton differentiableat a point x∈domf if
+there exists an open subset U⊂domf with x∈U and a family of maps H:U→ L(H,H ∗) such
+that
+lim
+h∈H,h→0
+∥f ′(x+h)−f ′(x)−H(x+h)h∥ ∗
+∥h∥ = 0.(28)
+(For Fr´echet differentiability, one should replace H(x+h) above with H(x).) We also say that f ′ is
+Newton differentiable at x with respect to H. If f ′ is Newton differentiable for every x∈U , we say
+that it is Newton differentiable onU.
+• Newton differentiability is defined in some works in terms of set-valued derivatives: a map
+T:X→Y is said to be Newton differentiable with Newton derivativeG:X⇒L(X, Y)
+if
+lim
+h→0
+sup
+M∈G(x+h)
+∥T(x+h)−T(x)−M h∥
+∥h∥ = 0.
+The definition of Newton derivative we use results from taking a selection from the set-valued
+map G at each point. Our Newton derivative can be viewed as an abuse of notation where a
+particular realization of the derivative has been chosen; in a sense then, our algorithm also
+can handle set-valued derivatives.
+• A commonly-used definition of semismoothness in literature is the following. The map T
+issemismoothat x if it is locally Lipschitz, directionally differentiable at x, and for any
+V∈∂T(x+h)withh→0, we have
+T(x+h)−T(x)−V h=O(h),
+where∂Trefers to the generalized or Clarke Jacobian ofT. See for example [78] or [43].
+We did not specify which particular maps H(x) are used in our definition of Newton differ-
+entiability. We could choose, for example, a single-valued selection of Clarke’s Jacobian
+as generalized derivative H(x) and in this way we recover semismoothness (provided the
+Lipschitz condition holds). Moreover, if f ′ is semismooth, every single-valued selection of
+Clarke’s Jacobian works asHin the above definition.
+• In light of these facts, and following established nomenclature within the community, we
+use the terms semismoothness and Newton differentiability interchangeably. Particularly,
+Newton differentiability implies Assumption 3 and one can choose Newton derivative asH in
+our algorithm. At the same time, let us underline that our paper covers a much more general
+setting that extends the notion of differentiability even further than semismooth functions.
+Indeed, despite beinglessrestrictive than other definitions, Newton differentiability is
+sufficient for a local superlinear convergence analysis, as we see in Section 4.
+For more details and comparisons, we refer to [65].
+A.2 Further discussion of our algorithm
+A key feature of our method is that we allow for lazy Hessian updates, with fresh Hessians being
+taken only every m iterations. To be precise, we utilize H(x 0) in the trial step (1) for iterates
+k= 0, . . . m−1, then H(x m) for iterates k=m, . . . ,2m−1, and so on. This is, as mentioned, the
+same setup considered in [19] (but under Lipschitz Hessian assumptions there).
+Let us note that whenψ≡0, the trial step (1) simplifies to
+x+ =x k −(H(x π(k)) +λR) −1f ′(xk)
+with λ= 4 jk Λk ∥f ′(xk)∥p . In this case, each trial step requires a standard linear system solve. In
+the general case, following the existing literature [60, 19, 20, 54, 52], we assume that the subproblem
+(1) is solved exactly. We defer the study of inexact subproblem solves to future work. We emphasize
+that gradient regularization is essential (i.e., p is not allowed to be 0) for our γ-order semismoothness
+result Theorem 4.5. Namely, it is needed in the proof of Proposition 4.1 (given below) in the inductive
+24

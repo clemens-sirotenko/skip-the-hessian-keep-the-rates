@@ -1,0 +1,53 @@
+Thus, there exists a bounded sequence(η k)k∈N ⊂R + such that
+∥f ′(xk,+)−f ′(xk)−H(x k)(xk,+ −x k)∥∗ ≤η k∥xk,+ −x k∥1+γ.
+This is (16) with θ=γ and π(k) =k . Applying Proposition 4.1, we obtain (19) with θ=γ ,
+which tells us that the sequence of regularization parameters goes to zero at the rate λk =O(g
+γ
+1+γ
+k ).
+Applying Lemma D.2, we get the claimed 1+2γ1+γ -order superlinear convergence of subgradients as
+k→ ∞
+∥F ′(xk+1)∥∗ (70)≤ 4λkµ ∥F ′(xk)∥∗ =O(∥F ′(xk)∥ 1+2γ1+γ∗ ).
+The convergence rate for the iterates is derived as follows. First, we have the following chain of
+inequalities
+gk
+(33)
+≤2λ k−1rk−1
+(7)
+≤2λ k−1 (∥xk −x ∗∥+∥x k−1 −x ∗∥)
+(69)
+≤2λ k−1
+ 4
+µ λk−1 ∥xk−1 −x ∗∥+∥x k−1 −x ∗∥
+ (66)
+≤ O(∥xk−1 −x ∗∥).
+Note that in the meantime we obtained also that ∥xk −x ∗∥=O(∥x k−1 −x ∗∥). We finish the proof
+as follows:
+∥xk+1 −x ∗∥ (69)≤ 4λkµ ∥xk −x ∗∥=O(g γ1+γk ∥xk −x ∗∥) =O(∥x k−1 −x ∗∥ γ1+γ · ∥xk−1 −x ∗∥).
+Let us note that the rate in Remark 4.6 follows directly by using gk ≤(L/2)∥x k −x ∗∥ (see (2.1.11)
+in [53]) in the equality in the final displayed equation in the proof above.
+The next lemma gives a sufficient condition for the Dennis–Mor´e-type condition (24).
+Lemma 4.7.Let Assumption 2 hold and xk →x ∗. If H is H¨older continuous with exponent γ at x∗,
+then(24)holds.
+Proof. By Lemma D.3, we have that xk,+ →x ∗ as k→ ∞. By (64) and (65) with λ=λ k/4,
+recalling that x+(λk/4, xk, xπ(k)) =x k,+, we get that there are constants c1, c2 >0 s.t.
+∥xk,+ −x ∗∥ ≤c1 ∥xk,+ −x k∥ and ∥xk −x ∗∥ ≤c2 ∥xk,+ −x k∥. This, together with the tri-
+angle inequality gives us
+∥(H(x k,+)−H(x k))(xk,+ −x ∗)∥∗
+∥xk,+ −x k∥ = ∥(H(x k,+)−H(x ∗) +H(x ∗)−H(x k))(xk,+ −x ∗)∥∗∥xk,+ −x k∥
+≤
+(∥H(x k,+)−H(x ∗)∥op +∥H(x ∗)−H(x k)∥op)∥x k,+ −x ∗∥
+∥xk,+ −x k∥
+(64)
+≤c 1(∥H(x k,+)−H(x ∗)∥op +∥H(x ∗)−H(x k)∥op)
+≤c 1(∥xk,+ −x ∗∥γ +∥x ∗ −x k∥γ)
+(64),(65)
+≤c 1(cγ1 ∥xk,+ −x k∥γ +c γ2 ∥xk,+ −x k∥γ).
+This clearly implies the condition (24).
+Theorem 4.8(Main theorem, γ-order semismoothness).Let Assumption 1 hold, F satisfy the Polyak–
+Łojasiewicz condition (10), the sublevel set F0 be bounded, and p <1 . Then, F(x k)−F ∗ →
+0, xk →x ∗, and ∥F ′(xk)∥∗ →0 linearly as k→ ∞. If in addition the local conditions ofAssumptions 2 and 4,(24)hold,m= 1andp∈[1/2,1), then the convergences
+xk →x ∗, F(x k)→F ∗
+are all superlinear, the convergence of∥F ′(xk)∥∗ is 1+2γ1+γ -order superlinear, and the convergence of
+xk is two-step 1+2γ1+γ -order superlinear.
+42

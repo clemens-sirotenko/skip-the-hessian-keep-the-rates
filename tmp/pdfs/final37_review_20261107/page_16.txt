@@ -1,0 +1,4 @@
+[79] Y . Zhang, Y . Cui, B. Sen, and K.-C. Toh. On efficient and scalable computation of the
+nonparametric maximum likelihood estimator in mixture models.Journal of Machine Learning
+Research, 25(8):1–46, 2024. URLhttp://jmlr.org/papers/v25/22-1120.html.
+16

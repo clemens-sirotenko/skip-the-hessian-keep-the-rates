@@ -1,0 +1,56 @@
+The main technical difficulties that we resolve in this paper lie in the construction of the stopping
+conditions that allow us to obtain all the results in a completely class- and parameter-agnostic way.
+In particular, compared to other adaptive second-order methods, we had to introduce the second
+inequality in line (2) of Algorithm 1, which is crucial for obtaining the convergence of the iterates
+under PL condition. Another main technical challenge was to prove the superlinear and γ-order
+superlinear convergence. The high-level idea is to show that the semismoothness allows us to obtain
+an analogue of (37), but with a constant L which goes to 0 with a certain rate. The next step is to show
+that locally the regularization parameter λk also goes to 0 with a certain rate, which eventually gives
+the desired improved rates under semismoothness. In that way, we strictly prove that our stopping
+conditions allow the algorithm to fully adapt to the local geometry of the objective function. To show
+the improved local rate in Theorem 4.5, we had to introduce gradient regularization with a careful
+choice of the exponent p and show that this does not ruin other results like global rates. Finally, we
+prove all this despite the fact that the algorithm uses “old” Hessians from the previous iterations, and
+the challenge was to show that this does not ruin other results, especially the local rates.
+The introduction mentions Huber, squared hinge, and sparsemax losses. All these losses are convex,
+have strongly-semismooth gradients, and Assumption 1 holds, thus, Theorem 3.5 holds. Moreover, if
+one adds quadratic regularization, then these regularized losses become strongly convex, and many of
+our theoretical results apply.
+According to Theorem 4.4, the whole convergence picture is as follows. From any starting point, the
+method converges linearly to a solution x∗ thanks to the PL condition. Since the linear convergence
+xk →x ∗ is guaranteed, at some point xk starts to belong to the ball around x∗ where the local strong
+convexity of Assumption 2 holds. The asymptotic semismoothness Assumption 3 and DM conditions
+also start to work after some iteration when xk is sufficiently close to x∗. All this implies that λk →0
+and the method starts to converge superlinearly when λk is sufficiently small. In that sense, the
+superlinear convergence is local and asymptotic, but the linear rate is global and nonasymptotic.
+Theorem 4.8 complements the convergence picture by quantifying the order of local superlinear
+convergence underγ-order semismoothness in Assumption 4.
+Compared to the existing literature on the global rates for second-order methods, which require
+f∈C 2,2, our results are obtained under a weaker Assumption 1, which does not even require that
+f∈C 2. For example, max{a⊤x−b,0} 2 satisfies our Assumptions 1, 3 and 4 while not being
+twice continuously differentiable, nor having Lipschitz Hessian. Further, existing works obtain local
+superlinear convergence under Lipschitz Hessians in the vicinity of the solution. On the contrary, our
+superlinear convergence results are based on the weaker (γ-order) semismoothness Assumptions 3
+and 4 and these assumptions are made only at the solution, rather than in the whole vicinity.
+We would like to underline that Lemma 4.3 implies that the results on superlinear convergence
+in Theorem 4.2 hold also in the infinite-dimensional C 2 setting. This also means that we have a
+hierarchy of results: for f∈C 1,1, we have results on linear and sublinear convergence rates, for
+f∈C 2, these results asymptotically improve, and for f∈C 2,2, it is possible to obtain improved
+convergence rates. The intermediate case f∈C 2 is not well explored in the literature and our paper
+gives some understanding of how algorithms should work in this situation.
+To simplify the presentation, we assumed local strong convexity in Assumption 2. This can be relaxed
+to local convexity to prove Proposition 4.1 and to F satisfying locally the PL condition, quadratic
+growth, andx ∗ being isolated to prove the inequalities in Theorems 4.2 and 4.5.
+Our theoretical results are not limited to the PL setting. As stated in Theorems 4.2 and 4.5, transition
+to superlinear convergence happens whenever xk →x ∗, which can be established in settings beyond
+PL, e.g., under strict convexity. Importantly, all our results are proved for a single class-agnostic
+method and there is no need to check in advance whether the PL condition holds or not. And even
+in the cases when PL is difficult to verify, we have global rate given by Theorems 3.2 and 3.5. Our
+Theorem 3.2 states that the algorithm stays on the level set and that each iteration decreases the value
+of the objective. Thus, it is sufficient to assume PL on a level set.
+Regarding our results in the finite-dimensional C 2 setting, the reader might wonder why we have
+both Theorem 3.5 (in particular, the statement in parentheses) and Theorem 4.9. The reason is that in
+the former, the PL inequality is not needed, unlike in Theorem 4.9.
+Our current theory does not prescribe a way to choose the laziness parameter m. This seems to be
+due to the lack of sufficient smoothness in our setting, unlike [19]. We expect though, that in some
+26

@@ -1,0 +1,61 @@
+0 100 101 102 103
+Runtime (s)
+10−3
+10−2
+10−1
+100
+101
+Gradient norm
+0 100 101 102 103 104
+Epoch
+10−3
+10−2
+10−1
+100
+101
+Gradient norm
+Adam
+GLAd-SSN
+GLAd-SSN m=50
+GLAd-SSN m=100
+GLAd-SSN m=200
+GLAd-SSN m=400
+Figure 1: Training neural networks with Lipschitz constraints (Section 5.1).GLAd-SSNperforms an
+order of magnitude better thanAdamin iteration count. Laziness (increasing m) helps significantly!
+where ∇2xΦ(xi, θ)denotes the Hessian of Φ(·, θ)with respect to the input, and ∥ · ∥2 is the spectral
+norm. Figure 1 shows the results of solving (26) withGLAd-SSN, with and without laziness, and a
+comparison toAdam, the standard solver in learning. We see that our algorithm performs excellently
+in iteration count, and laziness saves considerable time. This clearly demonstrates the advantage lazy
+Hessian updates can have. Figure 2 highlights the iteration efficiency ofGLAd-SSN, which brings
+the sampled Lipschitz estimate close to the target value of one in substantially fewer iterations than
+Adam.
+5.2 Non-negative matrix factorization
+Non-negative matrix factorization (NMF) is a standard tool in signal processing and machine learning,
+see [13, 26]. Given a data matrix Y∈R n×d whose columns are (noisy) measurements, NMF
+seeks nonnegative factors U∈R n×r+ (basis elements) and V∈R r×d+ (coefficients) such that
+U V≈Y , leading to the problem minU,V 12 ∥U V−Y∥ 2 + α2 (∥U∥ 2 +∥V∥ 2) s.t. U, V≥0 . We useMoreau–Yosida regularization and consider
+min
+U,V
+1
+2 ∥U V−Y∥ 2 + α2 (∥U∥ 2 +∥V∥ 2) + β2 (∥(−U) +∥2 +∥(−V) +∥2) (27)
+for a sufficiently large penalty parameter β >0. Figure 4 comparesGLAd-SSNfor different gradient
+exponents p withLeAP-SSN[ 1], gradient descent with Armijo backtracking [ 55], and a cubic-
+regularized Newton baseline [54] with adaptive backtracking.GLAd-SSNsubstantially outperforms
+gradient descent in reducing the gradient norm and achieves runtimes comparable to cubic Newton,
+while our analysis provides global and local convergence guarantees in the semismooth setting.
+In Figure 3 we plot β2 (∥(−U) +∥2 +∥(−V) +∥2), which measures the violation of the non-negativityconstraint. In Section E.2, we also show thatGLAd-SSNoutperforms PALM [ 4] and compare the full
+generalized Hessian with its positive definite Gauss–Newton approximation.
+5.3 Support vector classification
+We consider a support vector machine classification problem (also studied in [ 1]). Given points
+(xi)ℓi=1 ⊂R n where each point is classified into one of two groups denoted by (yi)ℓi∈1 ⊂ {−1,1},
+the aim is to find ω∈R n and b∈R such that the hyperplane ω⊤x+b= 0 separates the two groups.
+Given aγ >0, we consider (as in [77]), the L2-loss SVM model:
+min
+(ω,b)∈Rn×R F(ω, b) =12 ∥ω∥2ℓ2 +γ
+ℓX
+i=1
+max(1−y i(ω⊤xi +b),0) 2.
+We again runGLAd-SSNwith and without laziness and compare it toLeAP-SSN, gradient descent
+with Armijo linesearch, cubic Newton and SVRG-BB [70], which is used in [77] as a baseline. As
+can be seen in Figure 5, lazy updates can save compute time while possessing strong error guarantees.
+9

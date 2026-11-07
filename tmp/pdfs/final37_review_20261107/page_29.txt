@@ -1,0 +1,55 @@
+Thus, since λ= 4 jk Λkgpk in line 4 of Algorithm 1 is increasing when jk is increasing, we obtain,rearranging the last inequality, that the second inequality in line (2) of Algorithm 1 holds after a finite
+number of trials when λ≥L . Thus, both inequalities in line (2) of Algorithm 1 hold after a finite
+number of trials, and the step of Algorithm 1 is well defined.
+We now move to the proof of the bound(8) by induction. Consider the base case, i.e., iteration k= 0 .
+If j0 = 0, i.e., the acceptance condition holds for λ0 = Λ0gp0 and we have that λ0 ≤Λ 0gp0 ≤ λ. If
+j0 >0 , the preceding trial with parameter λ0/4 was rejected. By the first part of the lemma, this is
+impossible if λ0/4≥L , since that trial would admit a stationary point and this point also satisfies
+both acceptance inequalities. Thus,λ 0 ≤4L≤ λ.
+Assume now that the bound (8) holds for iteration k−1 and consider iteration k. If jk = 0, we have
+λk = Λkgpk = 4jk−1 Λk−14 gpk = λk−14gpk−1 gpk (35)≤ λk−12p4 p≤1≤ λk−12 ≤ λ,(43)
+where we used that 2p/4≤1/2 for any p∈[0,1] and the induction hypothesis λk−1 ≤ λ. If jk >0 ,
+we have again that λk/4≤L since it was not accepted by the same argument as before. Hence,
+λk ≤4L≤ λ. Thus, we have proved the first bound in (8). The second inequality in (8) just follows
+by definition, since for anyk≥0,Λ k+1 =λ k/(4gpk)≤ λ/(4g pk).
+C.1 Non-convex problems
+Equipped with the upper bound on λk, we can now move on to the proof of the convergence rate
+theorem for the general non-convex setting.
+Theorem 3.2.Let Assumption 1 hold and assume in addition that H(x)⪰0 for all x∈ H. Then, the
+sequence (xk)k∈N is well-defined with (xk)k∈N ⊂ F0 where F0 :={x∈domF:F(x)≤F(x 0)}
+is the sublevel set, and ∥F ′(xk)∥∗ →0 as k→ ∞. Moreover, the following global nonasymptoticconvergence rate holds fork≥1:
+min
+0≤i≤k−1
+∥F ′(xi+1)∥∗ ≤4
+q
+λF0/k.(9)
+If in addition λk →0 as k→ ∞, we obtain that min0≤i≤k−1 ∥F ′(xi+1)∥∗ =O(1/ √k). Finally,
+the number of Newton steps (1) up to the end of iteration k does not exceed 2(k+ 1) + log 4 λ4gpkΛ0
+and the number of Hessian evaluations does not exceed⌈ k+1m ⌉.
+Proof. We have by Lemma 3.1 that both inequalities in line (2) of Algorithm 1 hold in each iteration
+k≥0 , i.e., the acceptance conditions of the inner loop of Algorithm 1 hold and the inner loop ends
+after a finite number of trials. Thus, the sequence (xk)k∈N is well defined. From (32), it is clear by
+induction that for allk≥0,F(x k)≤F(x 0)and thus(x k)k∈N ⊂ F0.
+Summing (34) from 0 to k−1 and telescoping, using that F is bounded from below by F ∗ by
+Assumption 1, and Lemma 3.1, we obtain
+F0 =F(x 0)−F ∗ ≥F(x 0)−F(x k) (34)≥ k−1X
+i=0
+1
+16λi
+g2i+1 (8)≥ k−1X
+i=0
+1
+16λ g2i+1 ≥ k16λ min0≤i≤k−1 ∥F ′(xi+1)∥2∗ .
+First, observe that this chain of inequalities implies that for all k≥1 , Pk−1i=0 g2i+1 is bounded from
+above. Thus, ∥F ′(xi)∥∗ =g i →0 as i→ ∞. Second, recalling from (8) that λ= max{4L,Λ 0gp0},we immediately get (9). Now, suppose that λi →0 as i→ ∞. We also obtain from the above
+inequalities, by keepingλ i, that
+F(x 0)−F ∗ ≥ 116  min0≤i≤k−1 g2i+1 k−1Xi=0 1λi
+and hence
+min
+0≤i≤k−1
+g2i+1 ≤16(F(x 0)−F ∗) 1Pk−1
+i=0
+1
+λi
+.
+29

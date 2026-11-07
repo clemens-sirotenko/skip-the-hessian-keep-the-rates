@@ -1,0 +1,90 @@
+0 100 101 102 103
+Runtime (s)
+10−2
+10−1
+100
+Objective value
+0 100 101 102 103 104
+Epoch
+10−2
+10−1
+100
+Objective value
+Adam
+GLAd-SSN
+GLAd-SSN m=50
+GLAd-SSN m=100
+GLAd-SSN m=200
+GLAd-SSN m=400
+Figure 6: Training objective for the neural network experiment versus runtime (left) and Epochs
+(right).GLAd-SSNattains lower objective values thanAdam, while lazy Hessian updates substantially
+reduce runtime.
+0 20 40 60 80 100 120 140 160 180
+Runtime (s)
+10−9
+10−8
+10−7
+10−6
+10−5
+10−4
+10−3
+10−2
+10−1
+100
+101
+102
+103
+104
+Mean gradient norm
+0 500 1000 1500 2000 2500 3000 3500 4000
+Iteration
+10−9
+10−8
+10−7
+10−6
+10−5
+10−4
+10−3
+10−2
+10−1
+100
+101
+102
+103
+104
+Mean gradient norm
+Gradient Method
+PALM
+Cubic Newton
+LeAP-SSN
+GLAd-SSN, p=0.2
+GLAd-SSN, p=0.4
+GLAd-SSN, p=0.5
+GLAd-SSN, p=0.6
+GLAd-SSN, p=0.8
+LeAP-SSN (GN)
+GLAd-SSN, p=0.2 (GN)
+GLAd-SSN, p=0.5 (GN)
+Figure 7: Non-negative matrix factorization (Section 5.2): gradient norms averaged over 20 random
+seeds.
+E.2 Non-negative matrix factorization
+Semismooth differentiability.The smooth quartic data-fit part of (27) is a polynomial in the
+entries of (U, V)and hence C ∞. To show semismooth differentiability of the whole objective it
+remains to show that U7→ ∥(−U)+∥2F =∥U −∥2F is C 1 with semismooth gradient. The continuous
+differentiability directly follows from the differentiability of t7→max{−t,0} 2. Its derivative is the
+piecewise affine map t7→2 min{t,0}. Piecewise affine mappings are strongly semismooth (i.e.,
+1-order semismooth), cf. [23]. Hence the objective gradient isγ-order semismooth withγ= 1.
+Experimental data.We consider a synthetic non-negative matrix factorization problem with
+dimensions d= 200 , n= 100 and target rank r= 12 . We draw ground-truth non-negative factors
+Utrue ∈R d×r+ and Vtrue ∈R r×n+ with i.i.d. entries [Utrue]ij,[V true]ij ∼Unif(0,1) , and form the
+clean matrix
+Yclean =U trueVtrue ∈R d×n+ .
+The observed matrix is
+Y≡M obs =Y clean +σZ, Z ij
+i.i.d.
+∼ N(0,1),
+and in the reported setting we take σ= 0.2 . We set the ridge parameter to α= 2 and the non-
+negativity penalty weight to β= 200 in (27). The algorithm is initialized from a Gaussian vector
+x0 ∈R dr+nr with i.i.d. entries x0,k ∼ N(0,1), which is reshaped into initial factors U0 ∈R d×r and
+V0 ∈R r×n by splittingx 0 into blocks of sizesdrandnr.
+46

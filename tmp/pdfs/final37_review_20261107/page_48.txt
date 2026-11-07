@@ -1,0 +1,110 @@
+0 20 40 60 80 100 120 140 160 180
+Runtime (s)
+10−9
+10−8
+10−7
+10−6
+10−5
+10−4
+10−3
+10−2
+10−1
+100
+101
+102
+103
+104
+Mean gradient norm
+0 500 1000 1500 2000 2500 3000 3500 4000
+Iteration
+10−9
+10−8
+10−7
+10−6
+10−5
+10−4
+10−3
+10−2
+10−1
+100
+101
+102
+103
+104
+Mean gradient norm
+Gradient Method
+PALM
+Cubic Newton
+LeAP-SSN
+GLAd-SSN, p=0.2
+GLAd-SSN, p=0.4
+GLAd-SSN, p=0.5
+GLAd-SSN, p=0.6
+GLAd-SSN, p=0.8
+LeAP-SSN (GN)
+GLAd-SSN, p=0.2 (GN)
+GLAd-SSN, p=0.5 (GN)
+Figure 9: Non-negative matrix factorization (Section 5.2): gradient norms averaged over 20 random
+seeds.
+0 25 50 75 100 125 150 175 200
+Runtime (s)
+10−8
+10−7
+10−6
+10−5
+10−4
+10−3
+10−2
+10−1
+100
+101
+102
+103
+104
+Gradient norm
+0 500 1000 1500 2000 2500 3000
+Iteration
+10−8
+10−7
+10−6
+10−5
+10−4
+10−3
+10−2
+10−1
+100
+101
+102
+103
+104
+Gradient norm
+Gradient Method
+PALM
+LeAP-SSN GLAd-SSN, p=0.5
+0 250 500 750 1000 1250 1500 1750 2000
+Iteration
+0
+10−10
+10−9
+10−8
+10−7
+10−6
+10−5
+10−4
+10−3
+10−2
+10−1
+100
+101
+102
+103
+104
+105
+106
+Penalty
+Gradient Method
+PALM
+LeAP-SSN
+GLAd-SSN, p=0.5
+Figure 10: Non-negative matrix factorization (Section 5.2), comparison with PALM.
+48

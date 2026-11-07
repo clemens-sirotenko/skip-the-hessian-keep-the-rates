@@ -1,0 +1,20 @@
+the generalized Hessian, this would require additional control of the distance between the current
+iterate and the stale Hessian point, which is not provided by our present analysis. Establishing such
+conditions, or replacing them by more intrinsic structural assumptions, is left for future work.
+Fifth, our theoretical results quantify the number of Hessian evaluations for a fixed lazy-update period
+m, but they do not provide a principled rule for choosing m in practice. The best value of m depends
+on the relative cost of Hessian evaluations, linear-system solves, and backtracking steps, as well as
+on the local geometry of the objective. Developing adaptive rules for selecting the Hessian-update
+frequency is therefore an important practical question left open by our theory.
+Finally, although our experiments cover relevant machine learning problems, they remain relatively
+small-scale. In particular, the neural-network example is intended as a first demonstration of semis-
+mooth second-order solvers for Lipschitz-constrained training, but a more realistic imaging processing
+or inverse problems setup would require parametrizing high-dimensional denoisers. To the best of
+our knowledge, this is the first work to rigorously demonstrate semismooth Newton-type solvers with
+global convergence rates on such classes of problems. At present, however, direct applicability is
+limited to small- and medium-scale settings. Extending the approach to stochastic or randomized
+Newton-type methods is an important direction for making it practical in higher dimensions.
+We also note that our other assumptions, such as the global minimum assumption, (strong) convex-
+ity, Lipschitz derivative, semismoothness are standard for the theoretical analysis of optimization
+algorithms.
+50

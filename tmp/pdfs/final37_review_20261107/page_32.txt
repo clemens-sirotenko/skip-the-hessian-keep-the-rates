@@ -1,0 +1,97 @@
+Consider the case k∈ I1. If k= 0 , we trivially have λk ≤ λ and the bound follows. If jk >0 ,
+we argue as follows. First note that in order to have the inequalities (39) and (42) in the proof
+of Lemma 3.1, we need only the well posedness of the subproblems (1), and not the positive
+semidefiniteness H(x k)⪰0 . As jk >0 , λk/4 was not accepted, hence by (39) and (42), we must
+haveλ k/4≤L. Thus we have shown
+λk ≤ λ= max{4L,Λ 0gp0}for allk∈ I 1.
+Now consider the case k∈ I2. Whenever iteration k in this regime is given, we can find an index
+n∈N with n < kand n∈ I1 which happened last before k (i.e., the last index from I1 before k).
+From that choice we also have
+jn+1 =. . .=jn+(k−n) =j k = 0.(51)
+Choose now
+l⋆ ∈arg max
+0≤l≤k−n
+λn+l,
+that is, l⋆ is such that λn+l⋆ is the biggest element of {λn, λn+1, . . . , λk}. If l⋆ = 0, we recall that
+n∈ I1 and therefore as we already showedλ n+l⋆ ≤ λ.
+If insteadl ⋆ >0, we conclude
+λn+l⋆ = Λn+l⋆ gpn+l⋆ = λn4l⋆
+ gn+l⋆
+gn
+p
+,
+where we used the update Λn+1 =λ n/(4gpn) and jn+1 =· · ·=jn+l⋆ = 0. We further estimate
+using (34)
+gn+l⋆
+(34)
+≤
+p
+16λn+l⋆−1(Fn+l⋆−1 −F n+l⋆ )
+(a)
+≤4
+p
+λn+l⋆ Fn
+(P L)
+≤ 4gn√2µ pλn+l⋆ ,
+where in (a) the monotonicity of(Fk)k∈N and also the maximum property ofl⋆ were used. Combining
+the two latter inequalities gives
+λn+l⋆ ≤ λn4l⋆
+ 8
+µ
+ p
+2
+λ
+p
+2
+n+l⋆ .
+Rearranging yields, using that1−p/2>0andl ⋆ ≥1,
+λn+l⋆
+(n∈I1)
+≤
+ λn
+4
+ 2
+2−p
+ 8
+µ
+ p
+2−p
+≤
+ λ
+4
+ 22−p  8
+µ
+! p
+2−p
+=
+ λ
+4
+  2λ
+µ
+! p
+2−p
+.
+Combining all cases gives the bound in (11).
+(ii) The sequence (xk)k∈N ⊂ F0 is well defined as explained in the proof of Theorem C.1 above.
+Applying the PL condition (10), we get
+Fk −F k+1
+(34)
+≥ 116λk g2k+1 ≥ 116λk dist(0, ∂F(xk+1))2 (10)≥ 116λk ·2µF k+1.
+Rearranging, we obtain
+Fk+1 ≤ 11 + µ8λk Fk = 8λkµ+ 8λ k Fk = 1− µµ+ 8λ k  Fk.(52)
+We immediately see that if λk →0 as k→ ∞, then 1− µµ+8λk →0 and we obtain superlinear
+convergence. Using the upper boundλ k ≤ λPL in (11), we obtain
+
+1− µµ+ 8λ k
+
+≤
+
+1− µµ+ 8 λPL
+
+≤exp
+
+− µµ+ 8 λPL
+
+.
+This and (52), by induction, give (12).
+32

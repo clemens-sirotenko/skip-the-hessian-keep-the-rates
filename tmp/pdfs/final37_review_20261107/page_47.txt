@@ -1,0 +1,81 @@
+We apply Algorithm 1 with Λ0 = 10 and compare different gradient exponents p∈
+{0.2,0.4,0.5,0.6,0.8}.
+Gauss–Newton approximation.Motivated by the positive semidefiniteness assumption in Theo-
+rem 3.2, we test the algorithm with both the full generalized Hessian of the objective in (27) and its
+positive definite Gauss–Newton approximation. Writing R(U, V) :=U V−M obs and denoting its
+Jacobian with respect to the vectorized factors by JR(U, V), we retain the generalized curvature of
+the regularization terms:
+HGN(U, V) :=JR(U, V)⊤JR(U, V) +αI+βD(U, V).
+Here, D(U, V)is diagonal, with entries equal to one for negative factor entries and zero otherwise.
+Sinceα >0andβ≥0, we haveH GN(U, V)⪰αI≻0.
+Again we have ψ≡0 , and the subproblems become linear systems, which we solve using the
+MINRES algorithm due to the present non-convexity. We compare our algorithm againstLeAP-SSN
+presented in [ 1] in the setting suggested in this paper, a standard gradient descent with Armijo
+linesearch [55], and the Cubic Newton method, using adaptive backtracking as in [17, Algorithm 1]
+and approximately solving the subproblems with the Krylov subspace solver GLRT [ 6]. While
+this baseline performs well empirically beyond the assumptions of the cited analysis, our method
+combines comparable practical performance with convergence guarantees under the semismooth
+assumptions stated in this article.
+In Figure 8 we show also plots of the function residual vs. time and iteration count. In Figure 9
+we compare algorithm runs averaged over 20 different random seeds, including tests on first-order
+methods,GLAd-SSNfor different exponents p∈[0,1] ,LeAP-SSNand the respective Gauss–Newton
+approximation (GN). In Figure 10, we additionally compare against the baseline method PALM (see
+[4]) – an alternating gradient method, which we equip with a standard blockwise Armijo line search.
+Results.The results averaged over 20 random seeds in Figure 9 show thatGLAd-SSNattains
+substantially smaller gradient norms than gradient descent and PALM. Although cubic Newton
+requires fewer iterations,GLAd-SSNachieves competitive runtimes and performs comparably to
+LeAP-SSN. The full generalized-Hessian variants also achieve smaller gradient norms than their
+Gauss–Newton counterparts in this experiment. The objective residuals exhibit similar qualitative
+behavior, corroborating these findings.
+0 20 40 60 80 100 120 140
+Runtime (s)
+0
+10−8
+10−7
+10−6
+10−5
+10−4
+10−3
+10−2
+10−1
+100
+101
+102
+103
+104
+105
+106
+Objective residual
+0 500 1000 1500 2000 2500 3000 3500 4000
+Iteration
+0
+10−8
+10−7
+10−6
+10−5
+10−4
+10−3
+10−2
+10−1
+100
+101
+102
+103
+104
+105
+106
+Objective residual
+Gradient Method
+Cubic Newton
+LeAP-SSN
+GLAd-SSN, p=0.2
+GLAd-SSN, p=0.4
+GLAd-SSN, p=0.5
+GLAd-SSN, p=0.6
+GLAd-SSN, p=0.8
+Figure 8: Non-negative matrix factorization (Section 5.2): a plot of function residuals shows similar
+qualitative behaviour to the gradient norm (see Figure 4).
+E.3 Support vector classification
+Semismooth differentiability.The regularization term 12 ∥ω∥2ℓ2 is a polynomial in the componentsofωand henceC ∞. It therefore remains to treat the squared max term. Define the affine residuals
+ri(ω, b):= 1−y i(ω⊤xi +b), i= 1, . . . , ℓ.
+47

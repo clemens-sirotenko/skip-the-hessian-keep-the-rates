@@ -1,0 +1,50 @@
+Table 3: Optimization hyperparameters for training the Lipschitz-constrained neural network.
+Method Hyperparameter Value
+GLAd-SSN
+coefficientΛ 0 1.0
+gradient exponentp0.5
+power iterationsK10
+Hessian update frequenciesm{1,50,100, 200, 400}
+Adam
+stepsT2×10 5
+batch sizeB M(full batch)
+learning rateη10 −4
+schedulerReduceLROnPlateau
+schedule params factor0.5, patience5, threshold10 −5, min lr10 −6
+power iterationsK10
+Experimental data.We generate M= 100 training inputs xi ∈[0,2π] 2 uniformly at random and
+define targets
+yi = sin(xi,1) cos(xi,2) + 0.2 sin(2xi,1 +x i,2) + 0.1xi,1xi,2 +σz i,
+with i.i.d. Gaussian noisez i ∼ N(0,1)andσ= 0.05.
+Network architecture.We use a fully-connected network Φ(·;θ) :R 2 →R with widths 2−16−16−1
+andtanhactivations.
+Optimization and parameters.We apply Algorithm 1 to the objective in (26) with penalty
+parameter λ= 1.0 and ψ≡0 , so that the proximal subproblem reduces to solving a linear system.
+The Hessian is computed via automatic differentiation in PyTorch. At each inner iteration, we solve
+a damped Newton system of the form (H+λ kI)s=g . Because the objective is nonconvex, H
+may be indefinite, and H+λ kI can be ill-conditioned or singular; in such cases, we fall back to a
+least-squares solve. In this experiment, we symmetrize the Hessian as 12 (H+H ⊤) before solvingthe linear system. The damped Newton systems are solved by LU factorization, with a least-squares
+fallback when necessary.
+As a baseline, we minimize the same objective (26) using PyTorch’s 4 Adamoptimizer with default
+momentum parameters and no weight decay. We run T= 10 4 full-batch optimization steps. The
+learning rate is initialized to η= 7×10 −4 and adapted using ReduceLROnPlateau (factor 0.5,
+patience 5, threshold 10−5, and minimum learning rate10−6). In both algorithms, the Hessian penalty
+is computed as described above using K= 10 power iterations with a deterministic initialization.
+Additional hyperparameters are reported in Table 3. We test Algorithm 1 under six Hessian-update
+schedules, recomputing the Hessian every m iterations with m∈ {1,20,100,200,400} , where m is
+defined in (3).
+RemarkE.2 (On the choice of the spectral norm).Following [ 35, 59], we use the spectral norm ∥·∥2
+to ensure that ∇xΦ(·, θ)is non-expansive. Other matrix norms could be used as well, however, in
+applications the spectral norm typically performs better; see [59, Remark 3.4].
+Results.Figure 1 shows thatGLAd-SSNreduces the gradient norm in substantially fewer iterations
+thanAdam. Lazy updates yield an almost ninefold speedup for m= 100 versus m= 1 in first
+reaching a gradient norm below 10−3. Furthermore, Figure 7 shows lower training objectives than
+those attained byAdam, an important consideration in neural network training. While our analysis
+does not prescribe an optimal m, m= 100 offers a good empirical tradeoff in this experiment. In
+Figure 2, we report a sampled estimate of the Lipschitz constant of the input gradient ∇xΦ(·;θ) ,
+computed as
+bLtrain(θ) := max1≤i≤M bsK(xi;θ) = max1≤i≤M
+w(K−1)i (θ)2.
+The maximum is taken over the training samples using the power-iteration estimates defined above.
+4https://pytorch.org/, License: BSD-3-Clause.
+45

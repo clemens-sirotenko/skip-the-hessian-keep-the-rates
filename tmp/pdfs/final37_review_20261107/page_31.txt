@@ -1,0 +1,58 @@
+Substituting (47) into (46), summing and using (45),
+X
+k≥K1
+4 k−K1 g2k+1
+g pk ≤16 Λ K1
+X
+k≥K1
+δk <∞,(48)
+so in particular the summands tend to0. Thus,
+(k−K 1) ln 4 + 2 lngk+1 −plng k − → −∞(k→ ∞).(49)
+Sety k := lng k. By (49), there isK 2 ≥K 1 such that
+yk+1 ≤ p2 yk − (k−K 1) ln 42 , k≥K 2.(50)
+Unrolling (50) and using0≤p/2≤1/2<1,
+yn ≤
+ p
+2
+n−K2
+yK2 − ln 42
+n−1X
+j=K2
+ p
+2
+n−1−j
+(j−K 1)
+≤
+ p
+2
+n−K2
+yK2 − ln 42 (n−1−K 1)− → −∞(n→ ∞),
+sog n =e yn →0, and thuslim inf k→∞ ∥F ′(xk)∥∗ = 0.
+Since cases (a) and (b) are exhaustive, the claim follows in either case.
+C.2 Non-convex problems under PL condition
+Next, we consider the (possibly non-convex) setting under the PL condition. We start
+Theorem 3.4(Global linear convergence).Let Assumption 1 hold and F satisfy the Polyak–
+Łojasiewicz (PL) condition for someµ >0:
+1
+2µ dist(0, ∂F(x))2 ≥F(x)−F ∗,∀x∈domF.(10)
+Then, the following statements hold.
+(i) The sequence(λ k)k∈N is bounded. More precisely, for everyk∈N, we have
+λk ≤ λPL := λmax
+(
+1, 14  2λµ  p2−p ) , λ:= max{4L,Λ 0gp0}.(11)
+(ii) The objective values converge linearly, i.e., fork≥0,
+F(x k)−F ∗ ≤exp
+
+− µµ+ 8 λPL ·k  ·(F(x 0)−F ∗).(12)
+Ifλ k →0ask→ ∞, thenF(x k)−F ∗ converges to0superlinearly.
+(iii) Ifp <1and the sublevel setF 0 is bounded, i.e.,
+D0 := sup
+x,y∈F0
+∥x−y∥<+∞,(13)
+then xk converges strongly and linearly to a global minimum x∗, and ∥F ′(xk)∥∗ convergeslinearly to0. Ifλ k →0ask→ ∞, thenx k →x ∗ and∥F ′(xk)∥∗ →0superlinearly.
+Finally, the number of Newton steps (1) up to the end of iteration k does not exceed 2(k+ 1) +
+log4 λPL4gpkΛ0 and the number of Hessian evaluations does not exceed⌈ k+1m ⌉.
+Proof.(i) We first prove the bound (11). For that purpose, we divide the set of iterates into two
+disjoint sets
+I1 :={k∈N:k= 0orj k >0},I 2 :={k∈N:k >0andj k = 0}.
+31

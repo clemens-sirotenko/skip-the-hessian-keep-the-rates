@@ -1,0 +1,36 @@
+which is (64). Applying once again the triangle inequality, we obtain (65):
+∥xk −x ∗∥ ≤xk −x +(λ, xk, xπ(k)) + x+(λ, xk, xπ(k))−x ∗
+(64)
+≤
+xk −x +(λ, xk, xπ(k)) + (2c1 + 1)λk −(1 +c 1)λλk ∥x+(λ, xk, xπ(k))−x k∥.
+Lemma D.2.Let (xk)k∈N be the iterates of Algorithm 1. Let Assumption 2 hold and for all k≥K
+xk ∈B R(x∗). Ifλ k →0, then forksufficiently large,
+∥xk+1 −x ∗∥ ≤4λkµ ∥xk −x ∗∥,(69)
+gk+1 ≤ 4λkµ gk.(70)
+Proof.Applying (68) and the triangle inequality, we get, fork≥K
+∥xk+1 −x ∗∥ ≤2λkµ ∥xk −x k+1∥ ≤2λkµ (∥xk+1 −x ∗∥+∥x k −x ∗∥).
+Sinceλ k →0, forklarge enough we have2λ k/µ≤1/2and, hence, we get (69):
+∥xk+1 −x ∗∥ ≤4λkµ ∥xk −x ∗∥.
+By (67) we have
+∥xk+1 −x ∗∥ ≤gk+1/µ,∥x k −x ∗∥ ≤gk/µ.(71)
+Combining this with (33) and triangle inequality, we obtain,
+gk+1
+(33)
+≤2λ krk ≤2λ k ∥xk+1 −x ∗∥+ 2λ k ∥xk −x ∗∥ (71)≤ 2µ λkgk+1 + 2µ λkgk.
+We obtain (70) for the sameklarge enough s.t.2λ k/µ≤1/2.
+The next result establishes the convergence of non-accepted trial points xk,+ =x +(λk/4, xk, xπ(k))
+to x∗ when accepted points xk converge to x∗. Note that the condition H(x π(k))⪰0 for k≥K is
+guaranteed by Assumption 2.
+Lemma D.3.Let (xk)k∈N be the iterates of Algorithm 1 and xk →x ∗ as k→ ∞. Let also
+H(x π(k))⪰0fork≥K. Then,x k,+ =x +(λk/4, xk, xπ(k))→x ∗ ask→ ∞.
+Proof. For any k≥K and 0< λ≤λ k, by the triangle inequality, the definition xk+1 =
+x+(λk, xk, xπ(k))in line 9 of Algorithm 1 and (4), and Lemma B.2, we have
+∥xk −x +(λ, xk, xπ(k))∥ ≤ ∥xk+1 −x +(λ, xk, xπ(k))∥+∥x k+1 −x k∥
+(36)
+≤ λk −λλk ∥xk −x +(λ, xk, xπ(k))∥+∥x k+1 −x k∥.
+Rearranging, we obtain
+∥xk −x +(λ, xk, xπ(k))∥ ≤λkλ ∥xk+1 −x k∥.(72)
+Now, utilizing again the triangle inequality, we calculate
+∥x+(λ, xk, xπ(k))−x ∗∥ ≤ ∥x+(λ, xk, xπ(k))−x k∥+∥x k −x ∗∥ ≤λkλ ∥xk+1 −x k∥+∥x k −x ∗∥.
+The claim follows by settingλ=λ k/4and passing to the limit.
+37

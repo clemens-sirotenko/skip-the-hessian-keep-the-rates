@@ -1,0 +1,51 @@
+Proof. Since the assumptions of Theorem 3.4 hold, we obtain the claimed linear convergences.
+Moreover, xk →x ∗ as k→ ∞ where x∗ is a global minimum. The latter and additional local
+assumptions, since Assumption 4 implies Assumption 3, mean that all the assumptions of Theorem 4.2
+hold and we have thatλk →0 , which by Theorem 3.4 and Theorem 4.2 imply the claimed superlinear
+convergence. Finally, 1+2γ1+γ -order superlinear convergence of subgradients and two-step 1+2γ1+γ -order
+superlinear convergence ofx k follow from Theorem 4.5.
+The above theorem complements the convergence picture described after the proof of Theorem 4.4
+by quantifying the order of local superlinear convergence.
+D.5 Proofs of superlinear convergence underC 2 assumption
+Theorem 4.9(Main theorem, finite dimensions, C 2).Let dim(H)<∞ , Assumption 1 hold, F
+satisfy the Polyak–Łojasiewicz condition (10), p <1, and the sublevel set F0 be bounded. Then,
+F(x k)−F ∗ →0 , xk →x ∗, and ∥F ′(xk)∥∗ →0 linearly as k→ ∞. If additionally f is locally
+C 2 and locally convex aroundx ∗, andH :=∇ 2f, then the above convergences are all superlinear.
+Proof.Since the assumptions of Theorem 3.4 hold, we obtain the claimed linear convergences.
+Recall again the notation by xk,+ :=x +(λk/4, xk, xπ(k)) (see (4) and (7)). Since we are in the finite
+dimensional setting, we writef ′ ≡ ∇f.
+The idea is to show that (16) holds with ηk →0 and θ= 0 despite the fact that we don’t have local
+strong convexity in this case. This will then imply (17) by Proposition 4.1, and applying Lemma B.3
+we will obtainλ k →0. Thus it suffices to show
+ωk :=
+∇f(x k,+)− ∇f(xk)− ∇2f(x π(k))(xk,+ −x k)∗
+∥xk,+ −x k∥ →0ask→ ∞. (87)
+For this purpose, fix an arbitrary ε >0. By assumption, there exists a ball BR(x∗) on which ∇2f
+exists and is continuous. Moreover, by local convexity and twice differentiability of f we obtain
+H(x) :=∇ 2f(x)⪰0 for all x∈B R(x∗). In addition, using compactness of BR(x∗) and the
+Heine–Cantor theorem, we get that ∇2f is even uniformly continuous on BR(x∗). The latter means
+that there existsδ >0such that for everyx, y∈B R(x∗)with∥x−y∥ ≤δ, we have
+∥∇2f(x)− ∇2f(y)∥ op ≤ε.
+As xk →x ∗, also xπ(k) →x ∗ and there exists K1 such that k≥K 1 implies xk, xπ(k) ∈B R(x∗).
+This in turn implies that, for k≥K 1, H(x k)⪰0 . We conclude by Lemma D.3 that xk,+ →x ∗
+as well. We further infer that there is an index K2 ≥K 1 such that xk, xπ(k), xk,+ ∈B R(x∗),
+∥xk,+ −x k∥ ≤δ/2and
+xk −x π(k) ≤δ/2 for all k≥K 2. Consequently, we deduce from the
+fundamental theorem of calculus that, for allk≥K 2,∇f(x k,+)− ∇f(xk)− ∇2f(x π(k))(xk,+ −x k)∗
+=
+Z 1
+0
+(∇2f(x k +t(x k,+ −x k))− ∇2f(x π(k)))(xk,+ −x k) dt
+
+∗
+≤ε∥x k,+ −x k∥
+as, clearly, forx t :=x k +t(x k,+ −x k), we havex t ∈B R(x∗)andxt −x π(k) ≤ xk −x π(k) +∥x k,+ −x k∥ ≤δ
+for any t∈(0,1) . Since the choice of ε >0 was arbitrary, we infer (87). As described at the
+start of the proof, this implies λk →0 . This, by Theorem 3.4 implies that all the convergences
+xk →x ∗, F(x k)→F ∗,∥F ′(xk)∥∗ →0are superlinear.
+E Experimental details
+Our code modifies the framework provided in [ 16], released under the MIT License. The SVM
+example is also modified from [2], likewise released under the MIT License. All computed results
+reported in the paper were obtained using an Intel Core i7-11800H CPU on a Dell XPS 17 laptop
+with 64 GB of RAM.
+43

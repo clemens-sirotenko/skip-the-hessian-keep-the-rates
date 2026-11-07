@@ -1,0 +1,46 @@
+Acknowledgments and Disclosure of Funding
+The authors thank the referees for their careful reading and useful feedback. PD is thankful for
+support from the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under
+Germany’s Excellence Strategy – The Berlin Mathematics Research Center MATH+ (EXC-2046/1,
+EXC-2046/2, project ID: 390685689).
+There are no competing interests to declare.
+References
+[1] A. Alphonse, P. Dvurechensky, I. P. Papadopoulos, and C. Sirotenko. LeAP-SSN: A Semismooth
+Newton Method with Global Convergence Rates.arXiv preprint arXiv:2508.16468, 2025.
+[2] A. Alphonse, P. Dvurechensky, I. P. A. Papadopoulos, and C. Sirotenko. LeAP-SSN, 2025.
+URLhttps://github.com/amal-alphonse/leapssn.
+[3] J. Bolte, A. Daniilidis, and A. Lewis. Tame functions are semismooth.Math. Program., 117
+(1-2):5–19, 2009. ISSN 0025-5610,1436-4646. doi: 10.1007/s10107-007-0166-9. URL
+https://doi.org/10.1007/s10107-007-0166-9.
+[4] J. Bolte, S. Sabach, and M. Teboulle. Proximal alternating linearized minimization for noncon-
+vex and nonsmooth problems.Mathematical Programming, 146(1):459–494, 2014.
+[5] Y . Carmon, D. Hausler, A. Jambulapati, Y . Jin, and A. Sidford. Optimal and adaptive Monteiro–
+Svaiter acceleration. InProceedings of the 36th International Conference on Neural Information
+Processing Systems, NIPS ’22, Red Hook, NY , USA, 2022. Curran Associates Inc. ISBN
+9781713871088.
+[6] C. Cartis, N. I. Gould, and P. L. Toint. Adaptive cubic regularisation methods for unconstrained
+optimization. Part I: motivation, convergence and numerical results.Mathematical Programming,
+127(2):245–295, 2011.
+[7] C. Cartis, N. I. Gould, and P. L. Toint. Universal regularization methods: Varying the power,
+the smoothness and the accuracy.SIAM Journal on Optimization, 29(1):595–615, 2021/04/10
+2019. doi: 10.1137/16M1106316. URLhttps://doi.org/10.1137/16M1106316.
+[8] L. Chen, C. Liu, L. Luo, and J. Zhang. Computationally Faster Newton Methods by Lazy
+Evaluations.arXiv preprint arXiv:2501.17488, 2025.
+[9] X. Chen, Z. Nashed, and L. Qi. Smoothing methods and semismooth methods for nondif-
+ferentiable operator equations.SIAM J. Numer. Anal., 38(4):1200–1216, 2000. ISSN 0036-
+1429,1095-7170. doi: 10.1137/S0036142999356719. URLhttps://doi.org/10.1137/S0
+036142999356719.
+[10] X. Chen, Y . Shi, M. Dong, X. Yang, D. Li, Y . Wang, R. P. Dick, Q. Lv, Y . Zhao, F. Yang, N. Gu,
+and L. Shang. Over-parameterized model optimization with polyak–łojasiewicz condition. In
+Proceedings of the 11th International Conference on Learning Representations (ICLR), 2023.
+[11] Y . T. Chow, K. Ito, and J. Zou. Analysis on a nonnegative matrix factorization and its applications.
+SIAM Journal on Scientific Computing, 38(5):B645–B684, 2016. doi: 10.1137/15M1020824.
+URLhttps://doi.org/10.1137/15M1020824.
+[12] R. Cibulka, A. Dontchev, and M. H. Geoffroy. Inexact Newton Methods and Dennis–More
+Theorems for Nonsmooth Generalized Equations.SIAM Journal on Control and Optimization,
+53(2):1003–1019, 2015.
+[13] A. Cichocki, R. Zdunek, and S.-i. Amari. Nonnegative matrix and tensor factorization [lecture
+notes].IEEE Signal Processing Magazine, 25(1):142–145, 2008. doi: 10.1109/MSP.2008.440
+8452.
+[14] Y . Cui and J.-S. Pang.Modern nonconvex nondifferentiable optimization. SIAM, 2021.
+11

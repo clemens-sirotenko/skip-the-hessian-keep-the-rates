@@ -1,0 +1,53 @@
+jump discontinuities at certain transition points. The majority of the global results on second-order
+methods are inapplicable in these situations since the Hessians are not Lipschitz.
+An important property of classical Newton methods in the smooth world is their local superlinear
+convergence. This property can be ported to the nonsmooth world based on the notion of semismooth
+derivatives and the celebrated semismooth Newton method (SSN) [9, 63, 64, 72, 33]. This method
+is widely used for ML applications as witnessed by the above-mentioned references, where the
+objectives have semismooth and even γ-order/strongly semismooth derivatives. Nevertheless, there
+is a gap in the theory of global rates for second-order methods in the γ-order/strongly semismooth
+setting.
+A drawback of Newton methods is their potentially expensive iteration that requires evaluating the
+Hessian and solving a linear system. Assuming Lipschitz Hessians, it was shown in [19] that Hessian
+updates can be skipped for some iterations (i.e., one can perform lazy Hessian updates) in regularized
+Newton methods; such results are not known in the nonsmooth setting.
+To sum up, existing second-order methods for optimization involving nonsmooth derivatives suffer
+from expensive iterations and lack the full picture of theoretical convergence guarantees that covers
+both global rates and local asymptotic behavior in all the semismooth and γ-order semismooth
+settings. The goal of this paper is to close these gaps.
+We consider the composite minimization problem
+min
+x∈H
+{F(x) :=f(x) +ψ(x)},(P)
+where H is a Hilbert space, ψ:H → R is a potentially nonsmooth but simple convex function,
+and f∈C 1,1(H;R) is a (possibly nonconvex) function such that the Fr ´echet derivative f ′ is not
+necessarily smooth.
+Related works.Our paper complements several strands of existing literature on second-order
+methods. First, in finite dimensions, global rates are obtained in many settings, including convex and
+non-convex smooth problems, see, e.g., [54, 6, 52, 49, 24, 5, 41, 48, 18, 30], with the main assumption
+that the Hessian is Lipschitz. Nonsmooth problems and global rates under the umbrella of a H¨older
+Hessian assumption were considered, e.g., in [28, 29, 7, 20]. These papers use global assumptions
+on the Hessian and do not consider asymptotic rates under semismoothness at the solution or local
+convergence.
+On the other hand, classical works [ 36, 9, 63, 64, 72, 33] show including in infinite-dimensional
+settings, local superlinear convergence of SSN – a generalization of the Newton method that uses gen-
+eralized second derivatives instead of the Hessian for nonsmooth problems. Globalized convergence
+results are also obtained, e.g., in [58, 62, 23, 76, 14, 60, 61, 39, 51, 74, 56, 25], yet the question of
+global convergence rates is not answered in these papers. [1] obtain global rates, but consider neither
+theγ-order semismooth setting nor allow for lazy Hessian updates.
+Reusing Hessians from previous iterates dates back to Shamanskii [ 67], who established local
+convergence for nonlinear systems. More recently, [19, 8] showed that modern globalized Newton
+methods can reuse Hessians with only minor complexity degradation while reducing per-iteration
+cost, and established global rates. However, these works rely on Lipschitz Hessian assumptions, and
+it is not known whether the same can be achieved for nonsmooth problems.
+Contributions.To address the outlined gaps, we propose the first SSN combining all four desiderata:
+lazy Hessian updates, global convergence rates, local superlinear convergence under semismoothness,
+and improved local rates under γ-order semismoothness, satisfied by many ML applications. Our
+analysis is carried out in possibly infinite-dimensional Hilbert spaces and, in finite dimensions,
+yields superlinear convergence for f∈C 2, improving existing results. Importantly,all guarantees
+are achieved simultaneously by a single class- and parameter-agnostic methodwithout requiring
+knowledge of the objective class or problem parameters1. We also present experiments on constrained
+NN training, matrix factorization, and support vector classification.
+1Section A.3 contains a table summarizing assumptions and results, providing also additional discussions, and Section F
+discusses limitations of the results.
+2

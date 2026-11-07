@@ -1,0 +1,43 @@
+Assumption (18) is nonrestrictive since it can be guaranteed at iteration k= 0 by a burn-in phase of
+logarithmic length, see [20]. Thus, for the rest of this section, we assume that it is satisfied.
+We can observe from (17) that if θ= 0 and ηk →0 as k→ ∞, then also λk →0 as k→ ∞. This
+will be our key step to obtain improved rates under semismoothness. At the same time, (19) provides
+a rate with which λk goes to 0 depending on F ′(xk), which will allow us to quantify the rate of
+superlinear convergence underγ-order semismoothness.
+4.2 Superlinear convergence under semismoothness
+We now present our superlinear convergence result for Algorithm 1 under the following standard
+semismoothness assumption; see, e.g., [73, 23] and the discussion in Section A.1.
+Assumption 3.f ′ is semismooth atx ∗ with respect toH, i.e., asd→0,
+∥f ′(x∗ +d)−f ′(x∗)−H(x ∗ +d)d∥ ∗ =O(∥d∥).(20)
+This assumption is often satisfied in ML, e.g., in learning with the Huber loss or sparsemax loss, or
+training NNs with piecewise-smooth activations such as squared ReLU, Huberized ReLU, softplus
+with truncation. We prove in Section D.3 the following improved convergence result.
+Theorem 4.2(Superlinear convergence under semismoothness).Let Assumptions 1 to 3 hold, xk →
+x∗, and, ask→ ∞,
+∥(H(x k,+)−H(x k))(xk,+ −x ∗)∥∗ =O(∥x k,+ −x k∥),(21)(H(x k)−H(x π(k)))(xk,+ −x k)∗ =O(∥x k,+ −x k∥).(22)
+Then, ask→ ∞, we haveλ k →0and, forksufficiently large,
+∥xk+1 −x ∗∥ ≤4λk∥xk −x ∗∥µ =O(∥x k −x ∗∥),∥F ′(xk+1)∥∗ ≤ 4λk ∥F ′(xk)∥∗µ =O(∥F ′(xk)∥∗).
+Conditions (21) and (22) are in the spirit of the celebrated Dennis–Mor´e (DM) condition [15], which
+essentially gives a necessary and sufficient condition for superlinear convergence of quasi-Newton
+methods for smooth functions (in the nonsmooth setting, we refer to, e.g., [12, 21]). Similar conditions
+are used in previous works on SSNs [ 60, 61] to show superlinear convergence. The next lemma
+provides a sufficient condition for (21) and (22), see Section D.3 for the proof.
+Lemma 4.3.Let Assumption 2 hold andx k →x ∗. IfHis continuous, then(21)and(22)hold.
+Combining Theorem 3.4 and Theorem 4.2, we now have the full convergence picture of Algorithm 1:
+global linear convergence under PL condition and acceleration to superlinear convergence under
+additional local regularity. The proof is given in Section D.3.
+Theorem 4.4(Main theorem, semismoothness).Let Assumption 1 hold, F satisfy the Polyak–
+Łojasiewicz condition (10), the sublevel set F0 be bounded, and p <1 . Then, F(x k)−F ∗ →
+0, xk →x ∗, and ∥F ′(xk)∥∗ →0 linearly as k→ ∞. If in addition the local conditions ofAssumptions 2 and 3,(21)and(22)hold, then the following convergences are all superlinear:
+xk →x ∗, F(x k)→F ∗,∥F ′(xk)∥∗ →0.
+4.3 Faster rate underγ-order semismoothness
+In this section, we impose a stronger regularity assumption standard in the SSN literature; cf. [73, 3].
+Assumption 4. f ′ is γ-order semismooth at x∗ for some γ∈(0,1] with respect to H, i.e., as d→0 ,
+∥f ′(x∗ +d)−f ′(x∗)−H(x ∗ +d)d∥ ∗ =O(∥d∥ 1+γ).(23)
+Higher-order semismoothness is the key regularity behind accelerated local convergence of semis-
+mooth Newton methods, and it dovetails with our gradient regularization framework. It is satisfied
+by many ML primitives, including piecewise-affine maps such as the ReLU activation, Euclidean
+projections onto polyhedral sets, and spectral thresholding/projection operators (e.g., projection onto
+the PSD cone) [69, 14]. We further highlight residual maps arising in kernel optimal transport as a
+recent application [43] and the classical squared hinge loss in SVM.
+7

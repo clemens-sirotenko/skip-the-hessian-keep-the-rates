@@ -651,3 +651,65 @@ survive adding a period. Saved notebook outputs were preserved; no full run
 was performed. Environment matches the preceding checks. Snapshots, baseline
 and executed notebooks are in
 `corrected_results/diagnostics/central_config_20261105_221021/`.
+
+## Reloading the saved long run and testing new settings, 2026-11-06
+
+The third code cell of `experiment_nn_lipschitz_constraint_new.ipynb`, after
+imports/configuration and data/model setup, now loads
+`corrected_results/20261106_023855_023509/nn_results_new.pkl` by default.
+This is the approximately 256-minute comparison: 15,000 Adam updates and
+4,000 updates each for GLAd periods 1, 50, 100 and 200, coefficient 1, K=5,
+normalization epsilon 1e-7, float64, one CPU thread, seeds 26/27. It is a
+corrected finite-power experiment related to Section 5.1 / Appendix E.1 of
+the local 2026-10-22 manuscript, not reproduction of the historical paper
+figures; the public reference remains arXiv:2602.08069v1.
+
+`LONG_RUN_MODE="review"` restores the saved data, initial/final weights,
+histories and settings. Training cells explicitly skip optimization, even
+if the configuration cell is rerun and re-enables training switches.
+Exports are disabled by the loader in this mode. Original output cells and
+the saved result file remain unchanged. `review_saved_nn_run_new.ipynb`
+also remains available as a separate reader.
+
+`LONG_RUN_MODE="experiment"` retains the numerical settings entered in the
+first cell and reuses saved train/test tensors. `WARM_START_METHOD` chooses
+saved final weights as the common initialization for all selected methods;
+`None` chooses the saved original initialization. Optimizer state and active
+histories start fresh. This is a new comparison, not an exact continuation
+or concatenation with the old objective's history. New exports record the
+source file, source metadata and selected starting method. The loaded
+baseline remains available as `loaded_long_run`. Reloading resets the active
+comparison, so new work should be exported before rerunning the loader.
+`LOAD_LONG_RUN=False` retains the original fresh-setup workflow.
+
+The test-set cell reuses loaded test data. Trainer records now include K and
+precision; training/review/export checks reject mixed epsilon, K, penalty
+coefficient or precision before accepting a combined comparison. Training
+definitions should be rerun after changing configuration so Python default
+arguments use the current settings. No numerical optimizer, penalty formula,
+Hessian schedule, acceptance condition, solve rule, stopping criterion or
+configured training budget was changed in this update. Choosing warm-start
+mode deliberately changes initialization and is recorded as such.
+
+Fresh-kernel validation covered full review with trainers replaced by
+functions that fail if called, exact equality of restored weights/histories
+and test data, skip behavior after re-enabling training flags, rejection of
+changed epsilon/K, a separate two-update Adam/GLAd comparison from saved
+m=50 weights at epsilon 0.01, provenance, and the loading-disabled path.
+Original result SHA256 stayed
+`a1a5f278bea1c60704fa0a50e6158b94392535627dcb0e6aa89bfbb4633b7ea1`.
+This is workflow validation, not a repeat of the long experiment. Evidence
+and pre-edit notebook are under
+`corrected_results/diagnostics/long_run_20261106_new/`.
+
+The fixed-weight epsilon diagnostic in that directory evaluates epsilon
+1e-12, 1e-7, 1e-5, 1e-3, 0.01, 0.05 and 0.1 at saved m=1 and m=50
+endpoints without training. Values 1e-12 and 1e-7 give almost identical
+losses, gradients and curvature there. At the m=50 endpoint, sample index
+50 has true input-Hessian norm 1.1280067, while its power estimate changes
+from 1.0000199 at epsilon 1e-7 to 0.9983270 at 0.01, 0.9401716 at 0.05,
+and 0.5150987 at 0.1. The larger epsilon can remove this sample from the
+active penalty and reduce sharp curvature by underestimating the norm.
+These endpoint checks do not establish how a full new trajectory behaves.
+The direct notebook's Huber epsilon has a different role: smoothing the
+squared spectral maximum, rather than shrinking power-vector normalization.

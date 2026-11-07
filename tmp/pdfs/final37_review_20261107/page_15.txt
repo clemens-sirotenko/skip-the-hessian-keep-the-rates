@@ -1,0 +1,51 @@
+[64] L. Q. Qi and J. Sun. A nonsmooth version of Newton’s method.Math. Programming, 58
+(3):353–367, 1993. ISSN 0025-5610,1436-4646. doi: 10.1007/BF01581275. URL https:
+//doi.org/10.1007/BF01581275.
+[65] H. Rickmann, R. Herzog, and E. Herberg. Global Convergence of Semismooth Newton Methods
+for Quadratic Problems.GAMM Archive for Students, 7(1):16, 2025. doi: 10.14464/gammas.v7
+i1.810. URL https://www.bibliothek.tu-chemnitz.de/ojs/index.php/GAMMAS/ar
+ticle/view/810.
+[66] R. T. Rockafellar and R. J.-B. Wets.Variational analysis, volume 317 ofGrundlehren der
+mathematischen Wissenschaften [Fundamental Principles of Mathematical Sciences]. Springer-
+Verlag, Berlin, 1998. ISBN 3-540-62772-3. doi: 10.1007/978-3-642-02431-3. URL
+https://doi.org/10.1007/978-3-642-02431-3.
+[67] V . E. Shamanskii. A modification of newton’s method.Ukrainian Mathematical Journal, 19:
+118–122, 1967. URLhttps://api.semanticscholar.org/CorpusID:122185269.
+[68] Y . Shi, J. Huang, Y . Jiao, and Q. Yang. A Semismooth Newton Algorithm for High-Dimensional
+Nonconvex Sparse Learning.IEEE Transactions on Neural Networks and Learning Systems, 31
+(8):2993–3006, 2020. doi: 10.1109/TNNLS.2019.2935001.
+[69] D. Sun and J. Sun. Semismooth matrix-valued functions.Mathematics of Operations Research,
+27(1):150–169, 2002. doi: 10.1287/moor.27.1.150.342.
+[70] C. Tan, S. Ma, Y .-H. Dai, and Y . Qian. Barzilai-borwein step size for stochastic gradient
+descent. InProceedings of the 30th International Conference on Neural Information Processing
+Systems, NIPS’16, page 685–693, Red Hook, NY , USA, 2016. Curran Associates Inc. ISBN
+9781510838819.
+[71] P. Tang, C. Wang, D. Sun, and K.-C. Toh. A Sparse Semismooth Newton Based Proximal
+Majorization-Minimization Algorithm for Nonconvex Square-Root-Loss Regression Problems.
+Journal of Machine Learning Research, 21(226):1–38, 2020. URL http://jmlr.org/paper
+s/v21/19-247.html.
+[72] M. Ulbrich. Semismooth Newton methods for operator equations in function spaces.SIAM J.
+Optim., 13(3):805–842, 2002. ISSN 1052-6234,1095-7189. doi: 10.1137/S1052623400371569.
+URLhttps://doi.org/10.1137/S1052623400371569.
+[73] M. Ulbrich.Semismooth Newton methods for variational inequalities and constrained optimiza-
+tion problems in function spaces, volume 11 ofMOS-SIAM Series on Optimization. Society
+for Industrial and Applied Mathematics (SIAM), Philadelphia, PA; Mathematical Optimization
+Society, Philadelphia, PA, 2011. ISBN 978-1-611970-68-5. doi: 10.1137/1.9781611970692.
+URLhttps://doi.org/10.1137/1.9781611970692.
+[74] D. Wachsmuth. A globalized inexact semismooth Newton for strongly convex optimal control
+problems.arXiv preprint arXiv:2503.21612, 2025.
+[75] R. Wang, K. D. Dvijotham, and I. R. Manchester. Monotone, bi-lipschitz, and polyak–
+łojasiewicz networks. In R. Salakhutdinov, Z. Kolter, K. Heller, A. Weller, N. Oliver, J. Scarlett,
+and F. Berkenkamp, editors,Proceedings of the 41st International Conference on Machine
+Learning, volume 235 ofProceedings of Machine Learning Research, pages 50379–50399.
+PMLR, Jul 2024. URLhttps://proceedings.mlr.press/v235/wang24p.html.
+[76] X. Xiao, Y . Li, Z. Wen, and L. Zhang. A regularized semi-smooth newton method with
+projection steps for composite convex programs.arXiv preprint arXiv:1603.07870, 2016.
+[77] J. Yin and Q. Li. A semismooth Newton method for support vector classification and regression.
+Computational Optimization and Applications, 73(2):477–508, 2019. doi: 10.1007/s10589-019
+-00075-z.
+[78] Y . Yuan, D. Sun, and K.-C. Toh. An efficient semismooth Newton based algorithm for convex
+clustering. In J. Dy and A. Krause, editors,Proceedings of the 35th International Conference on
+Machine Learning, volume 80 ofProceedings of Machine Learning Research, pages 5718–5726.
+PMLR, 10–15 Jul 2018. URLhttps://proceedings.mlr.press/v80/yuan18a.html.
+15
