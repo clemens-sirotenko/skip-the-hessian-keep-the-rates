@@ -1,54 +1,33 @@
-# Python, notebook, editor and operating-system caches
-__pycache__/
-*.py[cod]
-.ipynb_checkpoints/
-*.prof
-.DS_Store
-Thumbs.db
-.venv/
+# Publish only the standalone experiment code and its dependencies.
+# Everything else remains available locally but is excluded from Git.
+/*
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/requirements.txt
+!/THIRD_PARTY.txt
+!/MF/
+!/NN/
+!/SVM/
 
-# Publish only the four main experiment notebooks.
-*.ipynb
+/MF/*
 !/MF/experiment_matrix_factorization_multiple_parallel_final.ipynb
+!/MF/methods.py
+!/MF/oracles.py
+!/MF/oracles_mat_fac.py
+!/MF/cubic_glrt.py
+!/MF/utils.py
+!/MF/utils_new.py
+!/MF/representative_plots.py
+!/MF/experiment_results.py
+!/MF/requirements-glrt.txt
+
+/NN/*
 !/NN/experiment_nn_lipschitz_constraint_new.ipynb
-!/NN/experiment_nn_lipschitz_constraint_new_v2.ipynb
+!/NN/GLAdSSNOptimizer_new.py
+!/NN/utils_new.py
+
+/SVM/*
 !/SVM/experiment_SVM_new.ipynb
-
-# Generated results and plots; the paper_run exceptions below are intentional.
-*.pkl
-*.pkl.gz
-*.pickle
-*.npz
-*.npy
-*.pt
-*.pth
-*.pdf
-*.png
-*.svg
-/MF/*.json
-/NN/*.json
-/SVM/*.json
-/MF/comparison_results/
-/MF/multiple_results/
-/MF/parallel_results/
-/NN/corrected_results/
-/NN/old figures/
-/SVM/results_new/
-
-# Local diagnostics, audits, paper drafts and temporary review files.
-/tmp/
-**/diagnostics/
-**/_diagnostics_archive/
-**/_local_reference/
-**/_local_arc/
-/MF/METHODS_AUDIT.md
-/NN/CORRECTIONS.md
-/SVM/NOTES_new.md
-
-# Curated, immutable inputs and figures for the camera-ready experiments.
-!/MF/paper_run/
-!/MF/paper_run/**
-!/NN/paper_run/
-!/NN/paper_run/**
-!/SVM/paper_run/
-!/SVM/paper_run/**
+!/SVM/SVM_oracles_new.py
+!/SVM/SVM_utils_new.py
