@@ -1,41 +1,0 @@
-D.3 Proofs of superlinear convergence under semismoothness
-We are finally ready to prove the main results for the semismooth and γ-order semismooth cases. We
-start with the first result that says that if convergence is already established, under semismoothness at
-x∗ (see Assumption 3) and the Dennis–Mor´e condition, it accelerates to superlinear asymptotically.
-Theorem 4.2(Superlinear convergence under semismoothness).Let Assumptions 1 to 3 hold, xk →
-x∗, and, ask→ ∞,
-∥(H(x k,+)−H(x k))(xk,+ −x ∗)∥∗ =O(∥x k,+ −x k∥),(21)(H(x k)−H(x π(k)))(xk,+ −x k)∗ =O(∥x k,+ −x k∥).(22)
-Then, ask→ ∞, we haveλ k →0and, forksufficiently large,
-∥xk+1 −x ∗∥ ≤4λk∥xk −x ∗∥µ =O(∥x k −x ∗∥),∥F ′(xk+1)∥∗ ≤ 4λk ∥F ′(xk)∥∗µ =O(∥F ′(xk)∥∗).
-Proof. Recall the notation (7) and in particular that xk,+ :=x +(λk/4, xk, xπ(k)) is the last nonac-
-cepted trial point if the linesearch was not trivial, i.e., jk >0 . Note that by Lemma D.3 we have that
-xk,+ →x ∗ as k→ ∞. Since we are in the asymptotic regime, we take k large enough so that any of
-the preceding results and properties (that hold for large enough k or in a ball around the minimum
-x∗) that we may require below hold.
-We can use Lemma D.1 withλ=λ k/4to obtain from (64) and (65)
-∥xk,+ −x ∗∥ ≤a∥xk,+ −x k∥,∥x k −x ∗∥ ≤b∥xk,+ −x k∥,(85)
-where a, b >0are constants. Using these inequalities, by the triangle inequality, semismoothness at
-x∗ (20), and the Dennis–Mor´e-type condition (21), we have
-∥f ′(xk,+)−f ′(xk)−H(x k)(xk,+ −x k)∥∗ ≤ ∥f′(xk,+)−f ′(x∗)−H(x k,+)(xk,+ −x ∗)∥∗
-+∥f ′(xk)−f ′(x∗)−H(x k)(xk −x ∗)∥∗
-+∥(H(x k,+)−H(x k))(xk,+ −x ∗)∥∗
-(20),(21)
-=O(∥x k,+ −x ∗∥) +O(∥x k −x ∗∥) +O(∥x k,+ −x k∥)
-(85)
-=O(∥x k,+ −x k∥).(86)
-It further follows by the Dennis–Mor´e-type condition (22) that
-f ′(xk,+)−f ′(xk)−H(x π(k))(xk,+ −x k)∗ ≤ ∥f′(xk,+)−f ′(xk)−H(x k)(xk,+ −x k)∥∗
-+
-(H(x k)−H(x π(k))(xk,+ −x k)∗
-(86),(22)
-=O(∥x k,+ −x k∥).
-Thus there exists a sequence(ε k)k∈N ⊂R + such thatε k →0and, ask→ ∞,
-f ′(xk,+)−f ′(xk)−H(x π(k))(xk,+ −x k)∗ ≤ε k∥xk,+ −x k∥.
-This is (16) with ηk =ε k and θ= 0 . Applying Proposition 4.1, we obtain (17) with θ= 0 and
-ηk =ε k →0 as k→ ∞. Applying further Lemma B.3, we obtain that λk →0 as k→ ∞. Finally,
-applying Lemma D.2, we get the claimed superlinear convergence ask→ ∞:
-∥xk+1 −x ∗∥ (69)≤ 4λkµ ∥xk −x ∗∥=O(∥x k −x ∗∥),
-∥F ′(xk+1)∥∗ (70)≤ 4λkµ ∥F ′(xk)∥∗ =O(∥F ′(xk)∥∗).
-The next lemma gives a sufficient condition for the Dennis–Mor´e-type conditions (21) and (22).
-Lemma 4.3.Let Assumption 2 hold andx k →x ∗. IfHis continuous, then(21)and(22)hold.
-40

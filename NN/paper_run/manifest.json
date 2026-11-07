@@ -1,0 +1,98 @@
+{
+  "format": "paper-run-manifest",
+  "version": 1,
+  "paper": {
+    "title": "Skip the Hessian, Keep the Rates: Globalized Semismooth Newton with Lazy Hessian Updates",
+    "public_url": "https://arxiv.org/abs/2602.08069",
+    "version": "November 2026 camera-ready manuscript (figure numbering checked against revision 38); public arXiv v1 has older experimental settings"
+  },
+  "experiment": "NN",
+  "paper_location": "Section 5.1 and Appendix E.1, equation (26), Table 3",
+  "results": {
+    "file": "nn_results_new_v2.pkl",
+    "source": "NN/corrected_results/paper_run/nn_results_new_v2.pkl",
+    "sha256": "695b21f8c70fef99c50ed4afb718cfded34ccc0358b3e31a0d1a8e70dca2f156",
+    "bytes": 14488849
+  },
+  "figures": [
+    {
+      "file": "plot_NN_new_v2_grad_norm.pdf",
+      "source": "NN/corrected_results/new_v2/20261107_010136_839175/plot_NN_new_v2_grad_norm.pdf",
+      "sha256": "a5e47f0c5ccc232165771b83f5a2d98b29cab41acae93a1b0fc8ffe2d5af8a65",
+      "bytes": 118545,
+      "figure": 1
+    },
+    {
+      "file": "plot_NN_new_v2_hess_op_norm.pdf",
+      "source": "NN/corrected_results/new_v2/20261107_010136_839175/plot_NN_new_v2_hess_op_norm.pdf",
+      "sha256": "b90201a66e98406910eace13d396461c65fb589d0b86fb7fd59f60eec13be826",
+      "bytes": 27543,
+      "figure": 2
+    },
+    {
+      "file": "plot_NN_new_v2_loss.pdf",
+      "source": "NN/corrected_results/new_v2/20261107_010136_839175/plot_NN_new_v2_loss.pdf",
+      "sha256": "49cd7acd3f35140499d5cf8fbcddabe821f464cb0723b221438358054d3523a1",
+      "bytes": 38646,
+      "figure": 6
+    }
+  ],
+  "plotted_methods": [
+    "Adam",
+    "GLAd-SSN",
+    "GLAd-SSN m=50",
+    "GLAd-SSN m=100",
+    "GLAd-SSN m=200",
+    "GLAd-SSN m=400"
+  ],
+  "accepted_updates": {
+    "Adam": 200000,
+    "GLAd-SSN": 3000,
+    "GLAd-SSN m=20": 3000,
+    "GLAd-SSN m=50": 3000,
+    "GLAd-SSN m=100": 3000,
+    "GLAd-SSN m=200": 5000,
+    "GLAd-SSN m=400": 6000
+  },
+  "configuration": {
+    "N": 100,
+    "architecture": [
+      2,
+      16,
+      16,
+      1
+    ],
+    "activation": "tanh",
+    "seed": 26,
+    "test_seed": 27,
+    "initialization_precision": "torch.float32",
+    "penalty_coefficient": 1,
+    "K": 10,
+    "normalization_eps": 1e-07,
+    "adam_lr": 0.0001,
+    "adam_scheduler": "ReduceLROnPlateau per update on pre-update loss; factor .5, patience 5, threshold 1e-5, min_lr 1e-6",
+    "grad_tol": 0.0,
+    "lam_min": 1e-09,
+    "max_backtracks": 25,
+    "solve_rtol": 1e-10,
+    "objective": "finite_power_surrogate"
+  },
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.7.1+cu126",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "processor": "Intel64 Family 6 Model 141 Stepping 1, GenuineIntel",
+    "device": "cpu",
+    "precision": "torch.float64",
+    "threads": 1,
+    "timing": "CPU perf_counter wall time, including diagnostics; model construction excluded",
+    "timing_continuation": "CPU perf_counter per update including diagnostics; legacy timings retained; state recovery, checkpoint copies/I/O and printing excluded"
+  },
+  "notes": [
+    "Results were copied byte-for-byte; no training was performed during packaging.",
+    "The Nov7 figure export has exactly the same histories and labels as this saved dataset. The figure styles match camera-ready Figures 1, 2 and 6.",
+    "The dataset includes an additional m=20 trajectory that is not plotted in the paper.",
+    "Saved source paths and the older manuscript reference inside the pickle are historical provenance; loading does not require those paths.",
+    "All training samples, initial weights, final weights, histories and available optimizer checkpoints are included."
+  ]
+}

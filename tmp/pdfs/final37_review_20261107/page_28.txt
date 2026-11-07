@@ -1,44 +1,0 @@
-C Proofs for Section 3 on global convergence rates
-We first prove the result with the upper bound on the sequence of the regularization parameters
-(λk)k∈N.
-Lemma 3.1.Let Assumption 1 hold Consider iteration k≥0 of Algorithm 1 applied to (P). If gk >0
-and λ≥L , the subproblems in (1) are well posed, and both inequalities in (2) of Algorithm 1 hold,
-i.e., all acceptance conditions of the inner loop of Algorithm 1 hold and the inner loop ends after a
-finite number of trials. Furthermore, if gk−1 >0 and H(x)⪰0 for all x∈ H, we have for every
-k≥0,
-λk ≤ λ := max{4L,Λ 0gp0},Λ k+1 ≤ λ/(4g pk).(8)
-Proof. Let us denote for brevity x+(λ) :=x +(λ, xk, xπ(k)). First note that by Assumption 1 a trial
-parameter λ≥L > L/2 implies that the subproblem (1) is strongly convex and admits a unique
-stationary point. We show that also the two acceptance inequalities in (2) hold in this case. Applying
-items (i) and (iv) of Assumption 1, we obtain, for anyλ≥0,f ′(x+(λ))−f ′(xk)−H(x π(k))(x+(λ)−x k)∗ ≤ ∥f′(x+(λ))−f ′(xk)∥∗
-+
-H(x π(k))(x+(λ)−x k)∗
-≤L∥x k −x +(λ)∥.(37)
-Whence, for anyλ≥0,
-L2 ∥xk −x +(λ)∥2 (37)≥ f ′(x+(λ))−f ′(xk)−H(x π(k))(x+(λ)−x k)2∗
-(6)
-=∥F ′(x+(λ)) +λR(x +(λ)−x k)∥2∗
-=∥F ′(x+(λ))∥2∗ + 2λ⟨F ′(x+(λ)), x+(λ)−x k⟩+λ 2 ∥xk −x +(λ)∥2 .(38)
-Dividing by2λand rearranging, we obtain, for anyλ≥L,
-⟨F ′(x+(λ)), xk −x +(λ)⟩ ≥12λ ∥F ′(x+(λ))∥2∗ + λ2 ∥xk −x +(λ)∥2 − L2 ∥xk −x +(λ)∥22λ (39)
-λ≥L
-≥ 12λ ∥F ′(x+(λ))∥2∗ .
-Thus, since λ= 4 jk Λkgpk in line 4 of Algorithm 1 is increasing when jk is increasing, we obtain thatthe first inequality in line (2) of Algorithm 1 holds after a finite number of trials whenλ≥L.
-We now move to the second inequality in(2) in Algorithm 1. Using that L/2-smoothness of f implies
-the descent lemma forfand using theL/2boundedness ofH(x π(k)), we obtain, for anyλ≥0,
-f(x +(λ))≤f(x k) +⟨f ′(xk), x+(λ)−x k⟩+ 12 ⟨H(x π(k))(x+(λ)−x k), x+(λ)−x k⟩
-+ L2 ∥x+(λ)−x k∥2 .(40)
-Using convexity ofψand (5), we obtain, for anyλ≥0
-ψ(x+(λ))≤ψ(x k) +⟨−ψ ′(x+(λ)), xk −x +(λ)⟩
-(5)
-=ψ(x k) +⟨f ′(xk) +H(x π(k))(x+(λ)−x k) +λR(x +(λ)−x k), xk −x +(λ)⟩.
-(41)
-Summing the last inequality with (40) and using that the Hessian is bounded by L/2, we further get,
-for anyλ≥L,
-F(x +(λ))≤F(x k)− 12 ⟨H(x π(k))(x+(λ)−x k), x+(λ)−x k⟩ −λ∥x+(λ)−x k∥2
-+ L2 ∥x+(λ)−x k∥2
-bounded Hess.
-≤F(x k) + L4 ∥x+(λ)−x k∥2 −λ∥x +(λ)−x k∥2 + L2 ∥x+(λ)−x k∥2
-L≤λ
-≤F(x k)− λ4 ∥x+(λ)−x k∥2 .(42)
-28

@@ -1,0 +1,265 @@
+{
+  "format": "nmf-paper-run",
+  "version": 1,
+  "paper": {
+    "url": "https://arxiv.org/abs/2602.08069",
+    "version": "NeurIPS 2026 camera-ready experimental figures, reviewed 2026-11-07",
+    "section": "5.2 / Appendix E.2",
+    "objective_equation": 27,
+    "algorithm": 1,
+    "subproblem_equation": 1
+  },
+  "notebook": "../experiment_matrix_factorization_multiple_parallel_final.ipynb",
+  "snapshot": {
+    "file": "results.pkl.gz",
+    "bytes": 217073194,
+    "sha256": "a312a16d1fadbf990bc0a7f1e007b85360e17a8146b06778e6ffc441636534b9",
+    "source": "MF/parallel_results/20261105_051152_877484/results.pkl.gz",
+    "preservation": "Byte-for-byte copy; all per-seed arrays, settings, statuses, timings and solver diagnostics retained. No downsampling."
+  },
+  "seeds": [
+    549,
+    498,
+    483,
+    33,
+    528,
+    989,
+    465,
+    344,
+    150,
+    861,
+    107,
+    424,
+    998,
+    235,
+    992,
+    229,
+    725,
+    911,
+    418,
+    146
+  ],
+  "figures": {
+    "figure3_penalty": {
+      "file": "figure3_penalty.pdf",
+      "bytes": 45170,
+      "sha256": "c404dd2417ed15b89ac50cbb834879d7c2966c2c0be9f71aa93f215e4decaa3d",
+      "paper_figure": 3,
+      "measure": "penalty",
+      "source_plot": "MF/parallel_results/replot_20261107_051838_980105/figure3_penalty.pdf",
+      "seed": 107,
+      "selection_role": "saved representative",
+      "linewidth": 1.8,
+      "marker_spacing": 0.15,
+      "plot_options": {
+        "methods": [
+          "Gradient Method",
+          "Cubic Newton",
+          "LeAP-SSN",
+          "GLAd-SSN, p=0.2",
+          "GLAd-SSN, p=0.4",
+          "GLAd-SSN, p=0.5",
+          "GLAd-SSN, p=0.6",
+          "GLAd-SSN, p=0.8"
+        ],
+        "max_iter": 2000,
+        "ylim": null,
+        "zero_scale": 1e-10,
+        "figsize": [
+          6,
+          4
+        ],
+        "legend_loc": "upper right"
+      }
+    },
+    "representative_gradient": {
+      "file": "representative_gradient.pdf",
+      "bytes": 205584,
+      "sha256": "b9fa6da3eaae2fb699b7c7626f0858f8611cab45df46886628bb2112dbf25e48",
+      "paper_figure": 4,
+      "measure": "grad_norm",
+      "source_plot": "MF/parallel_results/replot_20261107_051838_980105/representative_gradient.pdf",
+      "seed": 107,
+      "selection_role": "saved representative",
+      "objective_reference": 0.0,
+      "linewidth": 1.8,
+      "marker_spacing": 0.15,
+      "plot_options": {
+        "methods": [
+          "Gradient Method",
+          "Cubic Newton",
+          "LeAP-SSN",
+          "GLAd-SSN, p=0.2",
+          "GLAd-SSN, p=0.4",
+          "GLAd-SSN, p=0.5",
+          "GLAd-SSN, p=0.6",
+          "GLAd-SSN, p=0.8"
+        ],
+        "max_time": 150,
+        "max_iter": 4000,
+        "zero_scale": 1e-08
+      }
+    },
+    "representative_objective": {
+      "file": "representative_objective.pdf",
+      "bytes": 52552,
+      "sha256": "a1ac817b3cdc6c70c6643c6e64dd809afdabdcf8d0bc2d22f9fc88fd2cfb670b",
+      "paper_figure": 7,
+      "measure": "func",
+      "source_plot": "MF/parallel_results/replot_20261107_051838_980105/representative_objective.pdf",
+      "seed": 107,
+      "selection_role": "saved representative",
+      "objective_reference": 1454.9304279351331,
+      "linewidth": 1.8,
+      "marker_spacing": 0.15,
+      "plot_options": {
+        "methods": [
+          "Gradient Method",
+          "Cubic Newton",
+          "LeAP-SSN",
+          "GLAd-SSN, p=0.2",
+          "GLAd-SSN, p=0.4",
+          "GLAd-SSN, p=0.5",
+          "GLAd-SSN, p=0.6",
+          "GLAd-SSN, p=0.8"
+        ],
+        "max_time": 150,
+        "max_iter": 4000,
+        "zero_scale": 1e-08
+      }
+    },
+    "mean_gradient_GN_all": {
+      "file": "mean_gradient_GN_all.pdf",
+      "bytes": 645637,
+      "sha256": "e1010a378e0313b862b2519e0bded561200cd8ed8fec2c30a11448b65d20e154",
+      "paper_figure": 8,
+      "measure": "grad_norm",
+      "source_plot": "MF/parallel_results/replot_20261107_051838_980105/mean_gradient_GN_all.pdf",
+      "seeds": [
+        549,
+        498,
+        483,
+        33,
+        528,
+        989,
+        465,
+        344,
+        150,
+        861,
+        107,
+        424,
+        998,
+        235,
+        992,
+        229,
+        725,
+        911,
+        418,
+        146
+      ],
+      "objective_reference": 0.0,
+      "target": 1e-08,
+      "flat_tail_rtol": 0.001,
+      "convention": "All-seed arithmetic means with terminal values held; objective/penalty end at last recording, gradient additionally uses target/plateau cutoffs",
+      "linewidth": 1.8,
+      "marker_spacing": 0.15,
+      "plot_options": {
+        "methods": [
+          "Gradient Method",
+          "PALM",
+          "Cubic Newton",
+          "LeAP-SSN",
+          "GLAd-SSN, p=0.2",
+          "GLAd-SSN, p=0.4",
+          "GLAd-SSN, p=0.5",
+          "GLAd-SSN, p=0.6",
+          "GLAd-SSN, p=0.8",
+          "LeAP-SSN (GN)",
+          "GLAd-SSN, p=0.2 (GN)",
+          "GLAd-SSN, p=0.5 (GN)"
+        ],
+        "max_time": 180,
+        "max_iter": 4000,
+        "zero_scale": 1e-14
+      }
+    },
+    "palm_gradient": {
+      "file": "palm_gradient.pdf",
+      "bytes": 217636,
+      "sha256": "2d966b5938c6dbfc2655752b864dd41189b00bb5a8daf4950ce5a3fb271066d3",
+      "paper_figure": 9,
+      "measure": "grad_norm",
+      "source_plot": "MF/parallel_results/replot_20261107_051838_980105/palm_gradient.pdf",
+      "seed": 33,
+      "selection_role": "exploratory example",
+      "linewidth": 1.8,
+      "marker_spacing": 0.15,
+      "plot_options": {
+        "methods": [
+          "Gradient Method",
+          "PALM",
+          "LeAP-SSN",
+          "GLAd-SSN, p=0.5"
+        ],
+        "max_time": 200,
+        "max_iter": 3000,
+        "legend_layout": "paper",
+        "zero_scale": 1e-14,
+        "threshold": null
+      }
+    },
+    "palm_penalty": {
+      "file": "palm_penalty.pdf",
+      "bytes": 48452,
+      "sha256": "7b70bd936f435043051c437e7d28942eb74320a176c8bb3404c49a8f44d75f71",
+      "paper_figure": 9,
+      "measure": "penalty",
+      "source_plot": "MF/parallel_results/replot_20261107_051838_980105/palm_penalty.pdf",
+      "seed": 33,
+      "selection_role": "exploratory example",
+      "linewidth": 1.8,
+      "marker_spacing": 0.15,
+      "plot_options": {
+        "methods": [
+          "Gradient Method",
+          "PALM",
+          "LeAP-SSN",
+          "GLAd-SSN, p=0.5"
+        ],
+        "max_iter": 2000,
+        "ylim": null,
+        "zero_scale": 1e-10,
+        "figsize": [
+          6,
+          4
+        ],
+        "legend_loc": "upper right"
+      }
+    }
+  },
+  "selection": {
+    "representative_seed": 107,
+    "representative_rule": "Medoid of first-hit iteration ranks, independent of runtime.",
+    "palm_seed": 33,
+    "palm_role": "Separate manually selected illustrative run; not the representative run."
+  },
+  "aggregation": "Figure 8 uses all 20 seeds and all 12 methods; arithmetic means with terminal values retained. Runtime means use the most recently recorded value at each shared time, without interpolation.",
+  "reload": {
+    "path": "paper_run/results.pkl.gz",
+    "instructions": "Run imports and Settings, set RESULTS_TO_LOAD to this path, run Reload saved results, then continue at Prepare plots. Skip Initialize results and all solver cells."
+  },
+  "fresh_run_budget_note": {
+    "notebook_default_gradient_iterations": 80000,
+    "paper_executed_gradient_iterations": 320000,
+    "instructions": "For a fresh reproduction, set gradient_iterations=320000 before running Gradient Method. The historical snapshot experiment_config retains 80000, but run_metadata.methods[Gradient Method].options.max_iter records the actual 320000-step run. Other defaults are unchanged."
+  },
+  "environment_location": "results.pkl.gz: state.run_metadata (Python, packages, hardware, float64 precision, per-method executed options); state.effective_workers and state.experiment_threads",
+  "timing": "Recorded wall-clock times; 6 concurrent seed workers with 1 computational thread each. Runtimes depend on hardware and concurrent load.",
+  "storage": "The full snapshot is about 207 MiB and requires Git LFS. Load only trusted pickle files.",
+  "paper_plot_settings": {
+    "notebook_preserved": "The main notebook is unchanged; these are manual selections for reproducing the archived figures.",
+    "figure8_seed_override": 33,
+    "mean_plot_options[grad_norm][methods]": null,
+    "instructions": "For camera-ready Figure 9, use figure8_seed_override=33. For camera-ready Figure 8, set mean_plot_options[\"grad_norm\"][\"methods\"]=None to include all 12 completed methods. The internal figure8 variable names refer to the camera-ready PALM Figure 9."
+  }
+}

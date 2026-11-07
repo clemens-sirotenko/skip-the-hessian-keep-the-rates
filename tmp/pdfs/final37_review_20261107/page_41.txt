@@ -1,52 +1,0 @@
-Proof. By Lemma D.3, we obtain that xk,+ →x ∗ as k→ ∞. By (64) with λ=λ k/4, recalling that
-x+(λk/4, xk, xπ(k)) =x k,+, we get that there is a constantc >0s.t. ∥xk,+ −x ∗∥ ≤c∥xk,+ −x k∥.
-Thus,
-∥(H(x k,+)−H(x k))(xk,+ −x ∗)∥∗ ≤ ∥H(xk,+)−H(x k)∥op ·c∥x k,+ −x k∥
-and (21) follows by the continuity of H and the fact that xk,+ →x ∗ and xk →x ∗. Further, we have(H(x k)−H(x π(k)))(xk,+ −x k)∗ ≤ H(x k)−H(x π(k))op ∥xk,+ −x k∥
-and sincex k andx π(k) both converge tox ∗, we get (22) by continuity ofH.
-Note that by applying the triangle inequality toH, continuity may be relaxed to hold only atx ∗.
-We finally prove the main theorem under semismoothness.
-Theorem 4.4(Main theorem, semismoothness).Let Assumption 1 hold, F satisfy the Polyak–
-Łojasiewicz condition (10), the sublevel set F0 be bounded, and p <1 . Then, F(x k)−F ∗ →
-0, xk →x ∗, and ∥F ′(xk)∥∗ →0 linearly as k→ ∞. If in addition the local conditions ofAssumptions 2 and 3,(21)and(22)hold, then the following convergences are all superlinear:
-xk →x ∗, F(x k)→F ∗,∥F ′(xk)∥∗ →0.
-Proof. Since the assumptions of Theorem 3.4 hold, we obtain the claimed linear convergences.
-Moreover, xk →x ∗ as k→ ∞ where x∗ is a global minimum. The latter and additional local
-assumptions mean that all the assumptions of Theorem 4.2 hold and we have that λk →0 , which by
-Theorem 3.4 and Theorem 4.2 imply the claimed superlinear convergence.
-According to the above theorem, the whole convergence picture is as follows. From any starting
-point, the method converges linearly to a solution x∗ thanks to the PL condition. Since the linear
-convergence xk →x ∗ is guaranteed, at some point xk starts to belong to the ball around x∗ where the
-local strong convexity of Assumption 2 holds. Asymptotic semismoothness and DM conditions also
-start to work after some iteration when xk is sufficiently close to x∗. All this implies that λk →0 and
-the method starts to converge superlinearly when it is sufficiently small. In that sense, the superlinear
-convergence is local and asymptotic, but the linear rate is global and nonasymptotic.
-D.4 Proofs of superlinear convergence underγ-order semismoothness
-We now move on to the γ-order semismooth setting, where we manage to quantify the rate of
-superlinear convergence.
-Theorem 4.5(Superlinear convergence under γ-order semismoothness, m= 1 ).Let Assumptions 1,
-2 and 4 hold,x k →x ∗,m= 1(i.e.,π(k) =k),p∈[1/2,1], and ask→ ∞,
-∥(H(x k,+)−H(x k))(xk,+ −x ∗)∥∗ =O ∥xk,+ −x k∥1+γ .(24)
-Then ask→ ∞, we haveλ k =O(g
-γ
-1+γ
-k )and, forksufficiently large,
-∥xk+1 −x ∗∥=O(∥x k−1 −x ∗∥
-1+2γ
-1+γ ),∥F ′(xk+1)∥∗ =O(∥F ′(xk)∥
-1+2γ
-1+γ
-∗ ).(25)
-Proof. As in the proof of Theorem 4.2, we take below k sufficiently large so that all the needed local
-or asymptotic properties hold. Note again that by Lemma D.3 we have that xk,+ →x ∗ as k→ ∞.
-By the triangle inequality, γ-order semismoothness at x∗ (23), and the γ-order Dennis–Mor´e-type
-condition (24), we have
-∥f ′(xk,+)−f ′(xk)−H(x k)(xk,+ −x k)∥∗ ≤ ∥f′(xk,+)−f ′(x∗)−H(x k,+)(xk,+ −x ∗)∥∗
-+∥f ′(xk)−f ′(x∗)−H(x k)(xk −x ∗)∥∗
-+∥(H(x k,+)−H(x k))(xk,+ −x ∗)∥∗
-(23),(24)
-=O(∥x k,+ −x ∗∥1+γ) +O(∥x k −x ∗∥1+γ)
-+O(∥x k,+ −x k∥1+γ)
-(85)
-=O(∥x k,+ −x k∥1+γ).
-41
