@@ -1,7 +1,5 @@
 # Skip the Hessian, Keep the Rates
 
-The latest version of this code is available on [GitHub](https://github.com/clemens-sirotenko/skip-the-hessian-keep-the-rates).
-
 Code for **[Skip the Hessian, Keep the Rates: Globalized Semismooth Newton with Lazy Hessian Updates](https://arxiv.org/abs/2602.08069)** (NeurIPS 2026).
 This release contains the three standalone experiments for the November 2026 camera-ready version, Section 5 and Appendix E.
 
