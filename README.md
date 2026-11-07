@@ -24,7 +24,7 @@ Open a notebook below, restart its kernel, and select **Run All**. Run it from t
 | Neural network with a Lipschitz penalty | [NN experiment](NN/experiment_nn_lipschitz_constraint_new.ipynb) |
 | Support vector classification | [SVM experiment](SVM/experiment_SVM_new.ipynb) |
 
-The settings cells specify data sizes, seeds, method parameters and iteration budgets. Reduce these settings for a quick check; SVM also provides a `SMOKE_TEST` switch. Generated results are saved separately and excluded from Git.
+The settings cells specify data sizes, seeds, method parameters and iteration budgets. Generated results are saved separately and excluded from Git.
 
 The experiments use CPU computation and double precision; a GPU is not required. The NMF cubic Newton baseline uses GALAHAD GLRT, included in the dependencies. Subproblems use numerical tolerances, and wall-clock timings depend on hardware and thread settings.
 
